@@ -1,6 +1,7 @@
 import { AmbientLight, PointLight, LightingEffect } from "@deck.gl/core/typed"
 
 export const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+export const MAP_STYLE2 = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 export const AMBIENT_LIGHT = new AmbientLight({
     color: [255, 255, 255],
     intensity: 1.0,
