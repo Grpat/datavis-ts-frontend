@@ -1,184 +1,161 @@
-"use client"
+'use client'
 
-import React, {useState, useEffect, useCallback} from "react";
+import React, { useState, useEffect } from 'react'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import HexagonIcon from '@mui/icons-material/Hexagon'
+import SelectOption from '@/components/SelectOption'
+import {
+  Indicator,
+  Paginated,
+  Topic,
+} from '@/types/worldbankdata-types/WorldBankData'
+import useHttp, { UseHttpResult } from '@/hooks/use-http'
+import { styled } from '@mui/material'
+import { Option } from '@/types/common/Option'
+import CustomDateRangePicker from '@/components/CustomDateRangePicker'
 
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import HexagonIcon from '@mui/icons-material/Hexagon';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import {styled} from "@mui/material";
-import {CustomAutocomplete, CustomPaper, CustomTextField} from "@/muicomponents/muiStyled";
-import SelectOption from "@/components/SelectOption";
-
-export interface Film {
-    title: string;
-    year: number;
-}
-
-const top100Films: Film[] = [
-    { title: 'The Shawshank Redemption', year: 1994 },
-    { title: 'The Godfather', year: 1972 },
-    { title: 'The Godfather: Part II', year: 1974 },
-    { title: 'The Dark Knight', year: 2008 },
-    { title: '12 Angry Men', year: 1957 },
-    { title: "Schindler's List", year: 1993 },
-    { title: 'Pulp Fiction', year: 1994 },
-    {
-        title: 'The Lord of the Rings: The Return of the King',
-        year: 2003,
-    },
-    { title: 'The Good, the Bad and the Ugly', year: 1966 },
-    { title: 'Fight Club', year: 1999 },
-    {
-        title: 'The Lord of the Rings: The Fellowship of the Ring',
-        year: 2001,
-    },
-    {
-        title: 'Star Wars: Episode V - The Empire Strikes Back',
-        year: 1980,
-    },
-    { title: 'Forrest Gump', year: 1994 },
-    { title: 'Inception', year: 2010 },
-    {
-        title: 'The Lord of the Rings: The Two Towers',
-        year: 2002,
-    },
-    { title: "One Flew Over the Cuckoo's Nest", year: 1975 },
-    { title: 'Goodfellas', year: 1990 },
-    { title: 'The Matrix', year: 1999 },
-    { title: 'Seven Samurai', year: 1954 },
-    {
-        title: 'Star Wars: Episode IV - A New Hope',
-        year: 1977,
-    },
-    { title: 'City of God', year: 2002 },
-    { title: 'Se7en', year: 1995 },
-    { title: 'The Silence of the Lambs', year: 1991 },
-    { title: "It's a Wonderful Life", year: 1946 },
-    { title: 'Life Is Beautiful', year: 1997 },
-    { title: 'The Usual Suspects', year: 1995 },
-    { title: 'Léon: The Professional', year: 1994 },
-    { title: 'Spirited Away', year: 2001 },
-    { title: 'Saving Private Ryan', year: 1998 },
-    { title: 'Once Upon a Time in the West', year: 1968 },
-    { title: 'American History X', year: 1998 },
-    { title: 'Interstellar', year: 2014 },
-    { title: 'Casablanca', year: 1942 },
-    { title: 'City Lights', year: 1931 },
-    { title: 'Psycho', year: 1960 },
-    { title: 'The Green Mile', year: 1999 },
-    { title: 'The Intouchables', year: 2011 },
-    { title: 'Modern Times', year: 1936 },
-    { title: 'Raiders of the Lost Ark', year: 1981 },
-    { title: 'Rear Window', year: 1954 },
-    { title: 'The Pianist', year: 2002 },
-    { title: 'The Departed', year: 2006 },
-    { title: 'Terminator 2: Judgment Day', year: 1991 },
-    { title: 'Back to the Future', year: 1985 },
-    { title: 'Whiplash', year: 2014 },
-    { title: 'Gladiator', year: 2000 },
-    { title: 'Memento', year: 2000 },
-    { title: 'The Prestige', year: 2006 },
-    { title: 'The Lion King', year: 1994 },
-    { title: 'Apocalypse Now', year: 1979 },
-    { title: 'Alien', year: 1979 },
-    { title: 'Sunset Boulevard', year: 1950 },
-    {
-        title: 'Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb',
-        year: 1964,
-    },
-    { title: 'The Great Dictator', year: 1940 },
-    { title: 'Cinema Paradiso', year: 1988 },
-    { title: 'The Lives of Others', year: 2006 },
-    { title: 'Grave of the Fireflies', year: 1988 },
-    { title: 'Paths of Glory', year: 1957 },
-    { title: 'Django Unchained', year: 2012 },
-    { title: 'The Shining', year: 1980 },
-    { title: 'WALL·E', year: 2008 },
-    { title: 'American Beauty', year: 1999 },
-    { title: 'The Dark Knight Rises', year: 2012 },
-    { title: 'Princess Mononoke', year: 1997 },
-    { title: 'Aliens', year: 1986 },
-    { title: 'Oldboy', year: 2003 },
-    { title: 'Once Upon a Time in America', year: 1984 },
-    { title: 'Witness for the Prosecution', year: 1957 },
-    { title: 'Das Boot', year: 1981 },
-    { title: 'Citizen Kane', year: 1941 },
-    { title: 'North by Northwest', year: 1959 },
-    { title: 'Vertigo', year: 1958 },
-    {
-        title: 'Star Wars: Episode VI - Return of the Jedi',
-        year: 1983,
-    },
-    { title: 'Reservoir Dogs', year: 1992 },
-    { title: 'Braveheart', year: 1995 },
-    { title: 'M', year: 1931 },
-    { title: 'Requiem for a Dream', year: 2000 },
-    { title: 'Amélie', year: 2001 },
-    { title: 'A Clockwork Orange', year: 1971 },
-    { title: 'Like Stars on Earth', year: 2007 },
-    { title: 'Taxi Driver', year: 1976 },
-    { title: 'Lawrence of Arabia', year: 1962 },
-    { title: 'Double Indemnity', year: 1944 },
-    {
-        title: 'Eternal Sunshine of the Spotless Mind',
-        year: 2004,
-    },
-    { title: 'Amadeus', year: 1984 },
-    { title: 'To Kill a Mockingbird', year: 1962 },
-    { title: 'Toy Story 3', year: 2010 },
-    { title: 'Logan', year: 2017 },
-    { title: 'Full Metal Jacket', year: 1987 },
-    { title: 'Dangal', year: 2016 },
-    { title: 'The Sting', year: 1973 },
-    { title: '2001: A Space Odyssey', year: 1968 },
-    { title: "Singin' in the Rain", year: 1952 },
-    { title: 'Toy Story', year: 1995 },
-    { title: 'Bicycle Thieves', year: 1948 },
-    { title: 'The Kid', year: 1921 },
-    { title: 'Inglourious Basterds', year: 2009 },
-    { title: 'Snatch', year: 2000 },
-    { title: '3 Idiots', year: 2009 },
-    { title: 'Monty Python and the Holy Grail', year: 1975 },
-];
-
+const ArrowBackIcon = styled(ArrowBackIosNewIcon)({
+  fontSize: 'medium',
+  color: '#5eead4',
+})
+const HexagonLogo = styled(HexagonIcon)({
+  color: '#5eead4',
+})
 
 const SelectMenu = () => {
-    const [open, setOpen]= useState(true)
+  const [open, setOpen] = useState(true)
+  const [topicOptions, setTopicOptions] = useState<Option[]>([])
+  const [indicatorOptions, setIndicatorOptions] = useState<Option[]>([])
 
+  const [selectedTopic, setSelectedTopic] = useState<Option | null>(null)
+  const [selectedIndicator, setSelectedIndicator] = useState<Option | null>(
+    null,
+  )
 
-    return (
-        <div className='relative flex z-10 h-screen items-center w-72 '>
-            <div className={`absolute left-5 h-[96%] bg-zinc-900 duration-100 rounded ${open ? 'w-72' : 'w-0'}`}>
-                <ArrowBackIosNewIcon
-                    onClick={()=>setOpen(!open)}
-                    fontSize="medium"
-                    sx={{
-                    color: "#5eead4"
-                    }}
-                    className = {`absolute -right-7 top-0 bg-zinc-600 cursor-pointer rounded-sm hover:bg-zinc-400
-                    ${!open && "rotate-180"}`}>
-                </ArrowBackIosNewIcon>
-                <div className='h-24  bg-zinc-800 rounded overflow-hidden flex items-center'>
-                    <div className = "inline-flex items-center pl-5 z-10">
-                        <HexagonIcon
-                            sx={{color: '#5eead4'}}>
-                        </HexagonIcon>
-                        <h1 className = "text-teal-400 pl-1 text-sm font-bold uppercase">Data Visualization</h1>
-                    </div>
-                </div>
-                <div className="overflow-hidden h-full">
-                    <div className="flex flex-col items-center h-full">
-                        <div className="flex flex-col pt-5 w-[250px]">
-                            <label className= "font-thin">
-                                Select indicator</label>
-                            <SelectOption films={top100Films} />
-                        </div>
-                    </div>
-                </div>
+  const {
+    isLoading,
+    error,
+    sendRequest: fetchTopics,
+  } = useHttp<Paginated<Topic>>()
+  const {
+    isLoading: isLoading2,
+    error: error2,
+    sendRequest: fetchIndicators,
+  } = useHttp<Paginated<Indicator>>()
+
+  useEffect(() => {
+    const extractTopicsData = (data: Paginated<Topic>) => {
+      const [, topicsData] = data
+
+      const topicOptions: Option[] = topicsData.map((topic) => ({
+        id: topic.id,
+        value: topic.value,
+      }))
+      setTopicOptions(topicOptions)
+    }
+
+    fetchTopics(
+      {
+        url: 'https://api.worldbank.org/v2/topic?format=json&per_page=20000',
+      },
+      extractTopicsData,
+    )
+  }, [fetchTopics])
+
+  const extractIndicatorsData = (data: Paginated<Indicator>) => {
+    const [, indicatorsData] = data
+
+    const newIndicatorOptions: Option[] = indicatorsData.map((indicator) => ({
+      id: indicator.id,
+      value: indicator.name,
+    }))
+
+    setIndicatorOptions(newIndicatorOptions)
+  }
+  const handleTopicChange = async (option: Option | null) => {
+    setSelectedTopic(option)
+    setIndicatorOptions([])
+
+    if (option == null) return
+    fetchIndicators(
+      {
+        url: `http://api.worldbank.org/v2/topic/${option.id}/indicator?format=json&per_page=20000`,
+      },
+      extractIndicatorsData,
+    )
+  }
+
+  const handleIndicatorChange = (option: Option | null) => {
+    setSelectedIndicator(option)
+  }
+
+  useEffect(() => {
+    console.log(`selectedTopic: ${selectedTopic}`)
+  }, [selectedTopic])
+
+  useEffect(() => {
+    console.log(`selectedIndicator: ${selectedIndicator}`)
+  }, [selectedIndicator])
+
+  useEffect(() => {
+    console.log(`IndicatorOption: ${indicatorOptions}`)
+  }, [indicatorOptions])
+
+  return (
+    <div className="relative flex z-10 h-screen items-center w-80 ">
+      <div
+        className={`absolute left-5 h-[96%] bg-zinc-900 duration-100 rounded ${
+          open ? 'w-72' : 'w-0'
+        }`}
+      >
+        <ArrowBackIcon
+          onClick={() => setOpen(!open)}
+          className={`absolute -right-7 top-0 bg-zinc-600 cursor-pointer rounded-sm hover:bg-zinc-400
+                    ${!open && 'rotate-180'}`}
+        ></ArrowBackIcon>
+        <div className="relative h-full">
+          <div className="h-[10%]  bg-zinc-800 rounded overflow-hidden flex items-center">
+            <div className="inline-flex items-center pl-5 z-10">
+              <HexagonLogo></HexagonLogo>
+              <h1 className="text-teal-400 pl-1 text-sm font-bold uppercase">
+                Data Visualization
+              </h1>
             </div>
+          </div>
+          <div className="h-[90%] overflow-y-auto overflow-x-hidden">
+            <div className="flex flex-col items-center">
+              {!isLoading && !error && (
+                <div className="pt-5 w-[250px]">
+                  <label className="font-thin">Select Topic</label>
+                  <SelectOption
+                    selectOptions={topicOptions}
+                    onOptionChange={handleTopicChange}
+                  />
+                </div>
+              )}
+              {selectedTopic && (
+                <div className=" pt-5 w-[250px]">
+                  <label className="font-thin">Indicator</label>
+                  <SelectOption
+                    selectOptions={indicatorOptions}
+                    onOptionChange={handleIndicatorChange}
+                  />
+                </div>
+              )}
+              <div className="pt-5 w-[250px]">
+                <label className="font-thin">Date Range</label>
+                <CustomDateRangePicker
+                  startYear={1950}
+                  endYear={2022}
+                  inputFormat={'yyyy'}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  )
 }
 
 export default SelectMenu
