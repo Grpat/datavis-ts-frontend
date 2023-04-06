@@ -1,14 +1,11 @@
 'use client'
 
-import React, {
-  useState, useEffect, useCallback, FC,
-} from 'react'
+import React, { useState, useEffect, useCallback, FC } from 'react'
 import Map from 'react-map-gl'
 import maplibregl from 'maplibre-gl'
 import DeckGL from '@deck.gl/react/typed'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 
-// import map config
 import {
   MAP_STYLE,
   MAP_STYLE2,
@@ -29,7 +26,8 @@ const mapOptions = {
 } as any
 
 const DeckGlMap = () => {
-  const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection | null>(null)
+  const [geoJsonData, setGeoJsonData] =
+    useState<GeoJSON.FeatureCollection | null>(null)
   const [error, setError] = useState<any>(null)
 
   const fetchGeoJsonData = useCallback(async () => {

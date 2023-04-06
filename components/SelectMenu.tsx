@@ -114,7 +114,7 @@ const SelectMenu = () => {
                     ${!open && 'rotate-180'}`}
         ></ArrowBackIcon>
         <div className="relative h-full">
-          <div className="h-[10%]  bg-zinc-800 rounded overflow-hidden flex items-center">
+          <div className="h-[10%] bg-zinc-800 rounded overflow-hidden flex items-center">
             <div className="inline-flex items-center pl-5 z-10">
               <HexagonLogo></HexagonLogo>
               <h1 className="text-teal-400 pl-1 text-sm font-bold uppercase">
