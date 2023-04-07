@@ -10,7 +10,7 @@ export const CustomAutocomplete = styled(Autocomplete)({
 })
 export const CustomTextField = styled(TextField)({
   '& .MuiInputBase-input': {
-    height: 22,
+    height: 19,
     marginLeft: 10,
   },
 })

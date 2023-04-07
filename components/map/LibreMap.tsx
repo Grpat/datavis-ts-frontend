@@ -6,17 +6,10 @@ import maplibregl from 'maplibre-gl'
 import DeckGL from '@deck.gl/react/typed'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 
-import {
-  MAP_STYLE,
-  MAP_STYLE2,
-  LIGHTNING_EFFECT,
-  MATERIAL,
-  INITIAL_VIEW_STATE,
-  COLOR_RANGE,
-} from '@/lib/mapconfig'
+import { MAP_STYLE, MAP_STYLE2, LIGHTNING_EFFECT, MATERIAL, INITIAL_VIEW_STATE, COLOR_RANGE } from '@/lib/mapconfig'
 
 import { GeoJSON } from '@/types/common/GeojsonTypes'
-import SelectMenu from '@/components/SelectMenu'
+import SelectMenu from '@/components/select-menu/SelectMenu'
 
 const mapOptions = {
   reuseMaps: true,
@@ -26,8 +19,7 @@ const mapOptions = {
 } as any
 
 const DeckGlMap = () => {
-  const [geoJsonData, setGeoJsonData] =
-    useState<GeoJSON.FeatureCollection | null>(null)
+  const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection | null>(null)
   const [error, setError] = useState<any>(null)
 
   const fetchGeoJsonData = useCallback(async () => {

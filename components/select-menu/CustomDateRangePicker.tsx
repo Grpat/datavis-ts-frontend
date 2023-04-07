@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import { DesktopDatePickerSlotsComponentsProps } from '@mui/x-date-pickers/DesktopDatePicker/DesktopDatePicker.types'
-import { CustomTextField } from '@/app/styles/muiStyled'
+import { CustomPaper, CustomTextField } from '@/app/styles/muiStyled'
 
 const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<unknown> = {
   textField: {
@@ -16,30 +16,46 @@ const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<unknown> = {
     },
   },
 }
+
 interface CustomYearRangePickerProps {
-  startYear: number | ''
-  endYear: number | ''
-  inputFormat: string
+  dateStart: Date
+  dateEnd: Date
+  setDateStart(value: Date): void
+  setDateEnd(value: Date): void
 }
 
-const CustomYearRangePicker: React.FC<CustomYearRangePickerProps> = ({
-  startYear,
-  endYear,
-  inputFormat,
-}) => {
+const CustomYearRangePicker: React.FC<CustomYearRangePickerProps> = ({ dateStart, setDateStart, dateEnd, setDateEnd }) => {
+  const handleStartDateChange = (newStartDate: any) => {
+    setDateStart(newStartDate)
+  }
+
+  const handleEndDateChange = (newEndDate: any) => {
+    setDateEnd(newEndDate)
+  }
+
   return (
-    <div className="flex justify-between gap-2">
+    <div className='flex justify-between gap-2'>
       <DesktopDatePicker
+        onChange={handleStartDateChange}
+        value={dateStart}
         views={['year']}
+        maxDate={dateEnd}
+        yearsPerRow={3}
         slots={{
           textField: CustomTextField,
+          desktopPaper: CustomPaper,
         }}
         slotProps={datePickerSlotProps}
       />
       <DesktopDatePicker
+        onChange={handleEndDateChange}
+        value={dateEnd}
+        minDate={dateStart}
         views={['year']}
+        yearsPerRow={3}
         slots={{
           textField: CustomTextField,
+          desktopPaper: CustomPaper,
         }}
         slotProps={datePickerSlotProps}
       />
