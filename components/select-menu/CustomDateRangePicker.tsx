@@ -4,7 +4,7 @@ import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import { DesktopDatePickerSlotsComponentsProps } from '@mui/x-date-pickers/DesktopDatePicker/DesktopDatePicker.types'
 import { CustomPaper, CustomTextField } from '@/app/styles/muiStyled'
 
-const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<unknown> = {
+const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<any> = {
   textField: {
     variant: 'standard',
     className: 'bg-zinc-800 hover:bg-zinc-600 rounded-sm',
@@ -15,6 +15,21 @@ const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<unknown> = {
       color: '#5eead4',
     },
   },
+  /* layout: {
+    sx: {
+      width: '250px',
+    },
+  },*/
+  /*  desktopPaper: {
+    sx: {
+      '.MuiYearCalendar-root': {
+        width: 250,
+      },
+      '.MuiPickersYear-yearButton.Mui-selected': {
+        backgroundColor: '#5eead4',
+      },
+    },
+  },*/
 }
 
 interface CustomYearRangePickerProps {

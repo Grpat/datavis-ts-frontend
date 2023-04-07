@@ -24,8 +24,8 @@ const SelectMenu = () => {
   const [selectedTopic, setSelectedTopic] = useState<Option | null>(null)
   const [selectedIndicator, setSelectedIndicator] = useState<Option | null>(null)
 
-  const [dateRangeStart, setDateRangeStart] = useState(new Date(2021, 0, 1))
-  const [dateRangeEnd, setDateRangeEnd] = useState(new Date(2021, 0, 1))
+  const [dateRangeStart, setDateRangeStart] = useState<Date>(new Date(2021, 0, 1))
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date>(new Date(2021, 0, 1))
 
   const { isLoading: isLoadingTopics, error: errorTopics, sendRequest: fetchTopics } = useHttp<Paginated<Topic>>()
   const { isLoading: isLoadingIndicators, error: errorIndicators, sendRequest: fetchIndicators } = useHttp<Paginated<Indicator>>()
@@ -78,12 +78,8 @@ const SelectMenu = () => {
     setSelectedIndicator(option)
     if (option == null) return
   }
-  const handleDateRangeChange = (startDate: Date, endDate: Date) => {
-    setDateRangeStart(startDate)
-    setDateRangeEnd(endDate)
-  }
 
-  useEffect(() => {
+  /* useEffect(() => {
     console.log(`selectedTopic: ${selectedTopic}`)
   }, [selectedTopic])
 
@@ -101,7 +97,7 @@ const SelectMenu = () => {
 
   useEffect(() => {
     console.log(`selectedDateRangeEnd: ${dateRangeEnd}`)
-  }, [dateRangeEnd])
+  }, [dateRangeEnd])*/
 
   return (
     <div className='relative flex z-10 h-screen items-center w-80 '>
@@ -134,8 +130,7 @@ const SelectMenu = () => {
                   />
                 </div>
               )}
-
-              {/* {selectedIndicator && selectedTopic && (
+              {selectedIndicator && selectedTopic && (
                 <div className='pt-7 w-[250px]'>
                   <label className='font-thin'>Date Range</label>
                   <CustomDateRangePicker
@@ -145,7 +140,7 @@ const SelectMenu = () => {
                     setDateEnd={setDateRangeEnd}
                   />
                 </div>
-              )}*/}
+              )}
             </div>
           </div>
         </div>
