@@ -15,21 +15,22 @@ const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<any> = {
       color: '#5eead4',
     },
   },
-  /* layout: {
+  layout: {
     sx: {
       width: '250px',
     },
-  },*/
-  /*  desktopPaper: {
+  },
+
+  desktopPaper: {
     sx: {
-      '.MuiYearCalendar-root': {
+      '& .MuiDateCalendar-root': {
         width: 250,
       },
-      '.MuiPickersYear-yearButton.Mui-selected': {
-        backgroundColor: '#5eead4',
+      '& .MuiYearCalendar-root': {
+        width: 250,
       },
     },
-  },*/
+  },
 }
 
 interface CustomYearRangePickerProps {

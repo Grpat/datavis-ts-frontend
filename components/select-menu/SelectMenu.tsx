@@ -79,7 +79,7 @@ const SelectMenu = () => {
     if (option == null) return
   }
 
-  /* useEffect(() => {
+  useEffect(() => {
     console.log(`selectedTopic: ${selectedTopic}`)
   }, [selectedTopic])
 
@@ -97,7 +97,7 @@ const SelectMenu = () => {
 
   useEffect(() => {
     console.log(`selectedDateRangeEnd: ${dateRangeEnd}`)
-  }, [dateRangeEnd])*/
+  }, [dateRangeEnd])
 
   return (
     <div className='relative flex z-10 h-screen items-center w-80 '>
