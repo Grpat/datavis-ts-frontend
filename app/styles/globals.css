@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.map-background{
-    background-color: #2c353c;
+.map-background {
+  background-color: #2c353c;
 }
