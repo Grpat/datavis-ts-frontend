@@ -9,14 +9,7 @@ export declare namespace GeoJSON {
    * Inside this document, the term "geometry type" refers to seven case-sensitive strings: "Point", "MultiPoint",
    * "LineString", "MultiLineString", "Polygon", "MultiPolygon", and "GeometryCollection".
    */
-  export type Geometry =
-    | Point
-    | MultiPoint
-    | LineString
-    | MultiLineString
-    | Polygon
-    | MultiPolygon
-    | GeometryCollection
+  export type Geometry = Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon | GeometryCollection
   export type GeometryType = Geometry['type']
 
   /**
@@ -36,13 +29,9 @@ export declare namespace GeoJSON {
    * Implementations SHOULD NOT extend positions beyond three elements because the semantics of extra elements are
    * unspecified and ambiguous.
    */
-  export type Position = [
-    latitude: number,
-    longitude: number,
-    elevation?: number,
-  ]
+  export type Position = [latitude: number, longitude: number, elevation?: number]
 
-  export type Record = { [key in string | number]: unknown }
+  export type PropertyRecord = { [key in string | number]: unknown }
   interface PredefinedProperties {
     centroid: [number, number]
     country: string
@@ -52,14 +41,12 @@ export declare namespace GeoJSON {
 
   type AdditionalProperties = { [key: string]: any }
 
-  export interface CustomProperties
-    extends PredefinedProperties,
-      AdditionalProperties {}
+  export interface CustomProperties extends PredefinedProperties, AdditionalProperties {}
 
   /**
    * Properties inherit to all GeoJSON types
    */
-  export interface GeometryBase extends Record {
+  export interface GeometryBase extends PropertyRecord {
     /**
      * A GeoJSON object MAY have a member named "bbox" to include information on the coordinate range for its
      * Geometries, Features, or FeatureCollections. The value of the bbox member MUST be an array of length 2*n
@@ -181,7 +168,7 @@ export declare namespace GeoJSON {
      * A Feature object has a member with the name "properties". The value of the properties member is an object
      * (any JSON object or a JSON null value).
      */
-    properties: CustomProperties | null
+    properties: PropertyRecord | null
   }
 
   export interface FeatureCollection {

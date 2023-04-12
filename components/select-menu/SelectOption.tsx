@@ -1,24 +1,40 @@
 import React from 'react'
 import { Option } from '@/types/common/Option'
 import { CustomAutocomplete, CustomPaper, CustomTextField } from '@/app/styles/muiStyled'
+import { Chip } from '@mui/material'
 
-interface ChildComponentProps {
+interface SingleSelectComponentProps {
   selectOptions: Option[]
   selectedOption: Option | null
   onOptionChange: (option: Option | null) => void
+  isMultiple?: false
 }
 
-const SelectOption: React.FC<ChildComponentProps> = ({ selectOptions, selectedOption, onOptionChange }) => {
+interface MultiSelectComponentProps {
+  selectOptions: Option[]
+  selectedOption: Option[] | []
+  onOptionChange: (option: Option[] | []) => void
+  isMultiple: true
+}
+
+type ChildComponentProps = SingleSelectComponentProps | MultiSelectComponentProps
+
+const SelectOption: React.FC<ChildComponentProps> = ({ selectOptions, selectedOption, onOptionChange, isMultiple }) => {
   const handleInputChange = (e: any, value: any) => {
     onOptionChange(value)
+  }
+  const defaultProps = {
+    options: selectOptions,
+    getOptionLabel: (option: any) => option.value,
+    PaperComponent: CustomPaper,
+    multiple: isMultiple,
   }
 
   return (
     <div className='select-option'>
       <CustomAutocomplete
+        {...defaultProps}
         value={selectedOption}
-        options={selectOptions}
-        getOptionLabel={option => (option as { value: string }).value}
         renderOption={(props, option) => {
           const typedOption = option as Option
           return (
@@ -27,10 +43,14 @@ const SelectOption: React.FC<ChildComponentProps> = ({ selectOptions, selectedOp
             </li>
           )
         }}
+        renderTags={(tagValue, getTagProps) => {
+          return tagValue.map((option, index) => (
+            <Chip {...getTagProps({ index })} key={(option as Option).id} label={(option as Option).value} />
+          ))
+        }}
         onChange={handleInputChange}
-        PaperComponent={CustomPaper}
         renderInput={params => (
-          <CustomTextField key={params.id} className='bg-zinc-800 hover:bg-zinc-600 rounded-sm' {...params} fullWidth variant='standard' />
+          <CustomTextField {...params} className='bg-zinc-800 hover:bg-zinc-600 rounded-sm' {...params} fullWidth variant='standard' />
         )}
       />
     </div>

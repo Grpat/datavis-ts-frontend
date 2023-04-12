@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
+import { DesktopDatePicker, DesktopDatePickerProps } from '@mui/x-date-pickers/DesktopDatePicker'
 import { DesktopDatePickerSlotsComponentsProps } from '@mui/x-date-pickers/DesktopDatePicker/DesktopDatePicker.types'
 import { CustomPaper, CustomTextField } from '@/app/styles/muiStyled'
+import { FormHelperText } from '@mui/material'
 
 const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<any> = {
   textField: {
@@ -36,44 +37,82 @@ const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<any> = {
 interface CustomYearRangePickerProps {
   dateStart: Date
   dateEnd: Date
+
+  minDate: Date
+  maxDate: Date
+
   setDateStart(value: Date): void
+
   setDateEnd(value: Date): void
+
+  setStartDateError(value: string | null): void
+
+  setEndDateError(value: string | null): void
+
+  endDateError: string | null
+  startDateError: string | null
 }
 
-const CustomYearRangePicker: React.FC<CustomYearRangePickerProps> = ({ dateStart, setDateStart, dateEnd, setDateEnd }) => {
+const defaultProps: DesktopDatePickerProps<any> = {
+  views: ['year'],
+  yearsPerRow: 3,
+  disableFuture: true,
+  slotProps: datePickerSlotProps,
+}
+
+const CustomYearRangePicker: React.FC<CustomYearRangePickerProps> = ({
+  dateStart,
+  setDateStart,
+  dateEnd,
+  setDateEnd,
+  minDate,
+  maxDate,
+  startDateError,
+  setStartDateError,
+  endDateError,
+  setEndDateError,
+}) => {
   const handleStartDateChange = (newStartDate: any) => {
-    setDateStart(newStartDate)
+    if (newStartDate <= dateEnd && newStartDate >= minDate) {
+      setDateStart(newStartDate)
+      setStartDateError(null)
+    } else {
+      setStartDateError('Invalid date')
+    }
   }
 
   const handleEndDateChange = (newEndDate: any) => {
-    setDateEnd(newEndDate)
+    if (newEndDate >= dateStart && newEndDate <= maxDate) {
+      setDateEnd(newEndDate)
+      setEndDateError(null)
+    } else {
+      setEndDateError('Invalid date')
+    }
   }
 
   return (
     <div className='flex justify-between gap-2'>
       <DesktopDatePicker
+        {...defaultProps}
         onChange={handleStartDateChange}
         value={dateStart}
-        views={['year']}
         maxDate={dateEnd}
-        yearsPerRow={3}
+        minDate={minDate}
         slots={{
-          textField: CustomTextField,
+          textField: props => <CustomTextField {...props} helperText={startDateError ?? startDateError} />,
           desktopPaper: CustomPaper,
         }}
-        slotProps={datePickerSlotProps}
       />
       <DesktopDatePicker
+        {...defaultProps}
         onChange={handleEndDateChange}
         value={dateEnd}
         minDate={dateStart}
-        views={['year']}
-        yearsPerRow={3}
+        maxDate={maxDate}
         slots={{
-          textField: CustomTextField,
+          textField: props => <CustomTextField {...props} helperText={endDateError ?? endDateError} />,
           desktopPaper: CustomPaper,
         }}
-        slotProps={datePickerSlotProps}
       />
     </div>
   )

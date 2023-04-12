@@ -10,6 +10,8 @@ import { MAP_STYLE, MAP_STYLE2, LIGHTNING_EFFECT, MATERIAL, INITIAL_VIEW_STATE, 
 
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 import SelectMenu from '@/components/select-menu/SelectMenu'
+import useHttp from '@/hooks/use-http'
+import { Option } from '@/types/common/Option'
 
 const mapOptions = {
   reuseMaps: true,
@@ -18,31 +20,46 @@ const mapOptions = {
   preventStyleDiffing: true,
 } as any
 
-const DeckGlMap = () => {
-  const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection | null>(null)
-  const [error, setError] = useState<any>(null)
+interface ChildComponentProps {}
 
-  const fetchGeoJsonData = useCallback(async () => {
-    try {
-      const response = await fetch('http://localhost:8080/v1/countryBoundaries')
-      if (!response.ok) {
-        throw new Error('Something went wrong!')
-      }
-      const data: GeoJSON.FeatureCollection = await response.json()
-      console.log(data)
-      setGeoJsonData(data)
-    } catch (error: any) {
-      setError(error.message)
-    }
-  }, [])
+const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
+  const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection | null>(null)
+  const [worldBankDataLayer, setWorldBankDataLayer] = useState<GeoJSON.FeatureCollection | null>(null)
+
+  const {
+    isLoading: isLoadingCountryBoundaries,
+    error: errorCountryBoundaries,
+    sendRequest: fetchCountryBoundaries,
+  } = useHttp<GeoJSON.FeatureCollection>()
 
   useEffect(() => {
-    fetchGeoJsonData()
-  }, [fetchGeoJsonData])
+    const setCountryBoundaries = (data: GeoJSON.FeatureCollection) => {
+      setGeoJsonData(data)
+    }
+    fetchCountryBoundaries(
+      {
+        url: 'http://localhost:8080/v1/countryBoundaries',
+      },
+      setCountryBoundaries,
+    )
+  }, [fetchCountryBoundaries])
+
+  useEffect(() => {
+    console.log(geoJsonData)
+  }, [geoJsonData])
+
+  useEffect(() => {
+    console.log(worldBankDataLayer)
+  }, [worldBankDataLayer])
 
   return (
     <div>
-      <SelectMenu></SelectMenu>
+      <SelectMenu
+        geoJsonData={geoJsonData}
+        setWorldBankDataLayer={setWorldBankDataLayer}
+        errorCountryBoundaries={errorCountryBoundaries}
+        isLoadingCountryBoundaries={isLoadingCountryBoundaries}
+      ></SelectMenu>
       <DeckGL
         /* layers={geoJsonData ? layers : []} */
         initialViewState={INITIAL_VIEW_STATE}

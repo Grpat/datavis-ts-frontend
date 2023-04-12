@@ -2,6 +2,9 @@ import { createTheme } from '@mui/material'
 
 export const theme = createTheme({
   palette: {
+    success: {
+      main: '#0d9488', // Replace with your desired color
+    },
     text: {
       primary: '#a1a1aa',
     },
@@ -56,6 +59,10 @@ export const theme = createTheme({
           '& .MuiInput-underline:after': {
             borderBottomColor: '#5eead4',
           },
+          '&. Mui-error:after': {
+            borderBottomColor: '#fda4af',
+          },
+
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
               borderColor: '#5eead4',
@@ -93,8 +100,11 @@ export const theme = createTheme({
     MuiFormHelperText: {
       styleOverrides: {
         root: {
-          textTransform: 'initial',
-          fontSize: '1rem',
+          fontSize: '0.7rem',
+          marginLeft: 10,
+          '&.Mui-error': {
+            color: '#f87171',
+          },
         },
       },
     },

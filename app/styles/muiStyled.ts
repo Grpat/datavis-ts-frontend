@@ -1,6 +1,7 @@
 import { Paper, styled } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 
 export const CustomAutocomplete = styled(Autocomplete)({
   overflow: 'hidden',
@@ -14,7 +15,10 @@ export const CustomTextField = styled(TextField)({
     marginLeft: 10,
   },
 })
-
+export const ArrowBackIcon = styled(ArrowBackIosNewIcon)({
+  fontSize: 'medium',
+  color: '#5eead4',
+})
 export const CustomPaper = styled(Paper)({
   backgroundColor: '#27272a',
   color: '#a1a1aa',
