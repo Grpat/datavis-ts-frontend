@@ -50,3 +50,12 @@ export const COLOR_RANGE = [
   [254, 173, 84],
   [209, 55, 78],
 ]
+export const mapStyles = [
+  {
+    id: 'dark',
+    label: 'Dark Matter',
+    url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    icon: ``,
+    layerGroups: [], // DEFAULT_LAYER_GROUPS
+  },
+]

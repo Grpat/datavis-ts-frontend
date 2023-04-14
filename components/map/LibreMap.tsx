@@ -6,7 +6,7 @@ import maplibregl from 'maplibre-gl'
 import DeckGL from '@deck.gl/react/typed'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 
-import { MAP_STYLE, MAP_STYLE2, LIGHTNING_EFFECT, MATERIAL, INITIAL_VIEW_STATE, COLOR_RANGE } from '@/lib/mapconfig'
+import { MAP_STYLE, MAP_STYLE2, LIGHTNING_EFFECT, MATERIAL, INITIAL_VIEW_STATE, COLOR_RANGE, mapStyles } from '@/lib/mapconfig'
 
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 import SelectMenu from '@/components/select-menu/SelectMenu'
@@ -20,6 +20,19 @@ const mapOptions = {
   mapStyle: MAP_STYLE,
   preventStyleDiffing: true,
 } as any
+
+import KeplerGl from 'kepler.gl'
+import keplerGlReducer from 'kepler.gl/reducers'
+import { createStore, combineReducers, applyMiddleware } from 'redux'
+import { taskMiddleware } from 'react-palm/tasks'
+
+const reducer = combineReducers({
+  // <-- mount kepler.gl reducer in your app
+  keplerGl: keplerGlReducer,
+})
+
+// create store
+const store = createStore(reducer, {}, applyMiddleware(taskMiddleware))
 
 interface ChildComponentProps {}
 
@@ -82,15 +95,7 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         errorCountryBoundaries={errorCountryBoundaries}
         isLoadingCountryBoundaries={isLoadingCountryBoundaries}
       ></SelectMenu>
-      <DeckGL
-        layers={worldBankDataLayer ? layers : []}
-        initialViewState={INITIAL_VIEW_STATE}
-        controller={true}
-        /* getTooltip={getTooltip} */
-        effects={[LIGHTNING_EFFECT]}
-      >
-        <Map {...mapOptions} />
-      </DeckGL>
+      <KeplerGl id='foo' mapboxApiAccessToken={'dsad'} mapboxApiUrl={''} mapStyles={mapStyles} width={1000} height={1000} />
     </div>
   )
 }
