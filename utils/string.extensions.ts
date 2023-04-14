@@ -1,16 +1,24 @@
-interface String {
-  toColor(): string
-}
-
-String.prototype.toColor = function (this: string): string {
+export function stringToColor(str: string, alpha = 255): [number, number, number, number] {
   let hash = 0
-  if (this.length === 0) return hash.toString()
-  for (let i = 0; i < this.length; i++) {
-    hash = this.charCodeAt(i) + ((hash << 5) - hash)
+  if (str.length === 0) {
+    return [0, 0, 0, alpha] // Set a default color if the input string is empty
+  }
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
     hash = hash & hash
   }
   hash = ((hash % colors.length) + colors.length) % colors.length
-  return colors[hash]
+  const hexColorString = colors[hash]
+  const rgbaColorArray = hexToRGBA(hexColorString, alpha)
+  return rgbaColorArray
+}
+function hexToRGBA(hex: any, alpha = 1): [number, number, number, number] {
+  const trimmedHex = hex.replace('#', '')
+  const r = parseInt(trimmedHex.substring(0, 2), 16)
+  const g = parseInt(trimmedHex.substring(2, 4), 16)
+  const b = parseInt(trimmedHex.substring(4, 6), 16)
+
+  return [r, g, b, alpha]
 }
 
 const colors = [

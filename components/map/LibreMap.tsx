@@ -12,6 +12,7 @@ import { GeoJSON } from '@/types/common/GeojsonTypes'
 import SelectMenu from '@/components/select-menu/SelectMenu'
 import useHttp from '@/hooks/use-http'
 import { Option } from '@/types/common/Option'
+import { stringToColor } from '@/utils/string.extensions'
 
 const mapOptions = {
   reuseMaps: true,
@@ -52,6 +53,27 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
     console.log(worldBankDataLayer)
   }, [worldBankDataLayer])
 
+  const layers = [
+    new GeoJsonLayer({
+      id: 'geojson',
+      data: worldBankDataLayer || undefined,
+      opacity: 0.8,
+      stroked: true,
+      filled: true,
+      extruded: true,
+      wireframe: false,
+      getElevation: f => {
+        if (!f.properties) return 0
+        return f.properties.value
+      },
+      getFillColor: f => {
+        if (!f.properties) return [0, 0, 0]
+        return stringToColor(f.properties.country, 128)
+      },
+      getLineColor: [255, 255, 255],
+      pickable: true,
+    }),
+  ]
   return (
     <div>
       <SelectMenu
@@ -61,7 +83,7 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         isLoadingCountryBoundaries={isLoadingCountryBoundaries}
       ></SelectMenu>
       <DeckGL
-        /* layers={geoJsonData ? layers : []} */
+        layers={worldBankDataLayer ? layers : []}
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
         /* getTooltip={getTooltip} */
