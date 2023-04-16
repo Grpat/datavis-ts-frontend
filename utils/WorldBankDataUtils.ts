@@ -1,8 +1,6 @@
 import { IndicatorData } from '@/types/worldbankdata-types/WorldBankData'
 import { Option } from '@/types/common/Option'
 import { GeoJSON } from '@/types/common/GeojsonTypes'
-import CustomProperties = GeoJSON.CustomProperties
-import PropertyRecord = GeoJSON.PropertyRecord
 
 export function getMinMaxYears(data: IndicatorData[]): { minYear: number; maxYear: number } {
   if (data.length === 0) {
@@ -79,15 +77,17 @@ export function combineData(
   indicatorData: IndicatorData[],
 ): GeoJSON.FeatureCollection | null {
   const indicatorDataByIsoCode: Record<string, IndicatorData[]> = {}
-  const start = performance.now()
+
   if (!geoJsonData) {
     return null
   }
   indicatorData.forEach(data => {
-    if (!indicatorDataByIsoCode[data.countryiso3code]) {
-      indicatorDataByIsoCode[data.countryiso3code] = []
+    const countryCode = data.countryiso3code || data.country.id
+
+    if (!indicatorDataByIsoCode[countryCode]) {
+      indicatorDataByIsoCode[countryCode] = []
     }
-    indicatorDataByIsoCode[data.countryiso3code].push(data)
+    indicatorDataByIsoCode[countryCode].push(data)
   })
 
   const combinedFeatures: GeoJSON.Feature[] = []
@@ -118,60 +118,9 @@ export function combineData(
       }
     }
   })
-  const end = performance.now()
-  const timeTaken = end - start
 
-  console.log('Time taken by combineData:', timeTaken, 'milliseconds')
   return {
     ...geoJsonData,
     features: combinedFeatures,
   }
 }
-/*export function combineData2(geoJsonData: GeoJSON.FeatureCollection, indicatorData: IndicatorData[]): GeoJSON.FeatureCollection {
-  const featuresByIsoCode: Record<string, GeoJSON.Feature[]> = {}
-
-  const start = performance.now()
-  geoJsonData.features.forEach(feature => {
-    if (feature.properties) {
-      if (!featuresByIsoCode[feature.properties.isoCode as string]) {
-        featuresByIsoCode[feature.properties.isoCode as string] = []
-      }
-      featuresByIsoCode[feature.properties.isoCode as string].push(feature)
-    }
-  })
-
-  const combinedFeatures: GeoJSON.Feature[] = []
-
-  indicatorData.forEach(data => {
-    const matchingFeaturesArray = featuresByIsoCode[data.countryiso3code]
-
-    if (matchingFeaturesArray) {
-      matchingFeaturesArray.forEach(matchingFeature => {
-        const timestamp = new Date(data.date).getTime()
-
-        const updatedProperties: Record<string, unknown> = {
-          ...matchingFeature.properties,
-          indicatorValue: data.indicator.value,
-          indicatorId: data.indicator.id,
-          value: data.value,
-          timestamp,
-        }
-
-        const updatedFeature: GeoJSON.Feature = {
-          ...matchingFeature,
-          properties: updatedProperties,
-        }
-
-        combinedFeatures.push(updatedFeature)
-      })
-    }
-  })
-  const end = performance.now()
-  const timeTaken = end - start
-
-  console.log('Time taken by combineData:', timeTaken, 'milliseconds')
-  return {
-    ...geoJsonData,
-    features: combinedFeatures,
-  }
-}*/

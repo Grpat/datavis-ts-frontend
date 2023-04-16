@@ -1,7 +1,7 @@
 export function stringToColor(str: string, alpha = 255): [number, number, number, number] {
   let hash = 0
   if (str.length === 0) {
-    return [0, 0, 0, alpha] // Set a default color if the input string is empty
+    return [0, 0, 0, alpha]
   }
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash)

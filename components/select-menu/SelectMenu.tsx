@@ -12,25 +12,33 @@ import Header from '@/components/select-menu/Header'
 import { ArrowBackIcon } from '@/app/styles/muiStyled'
 import { allCountries, extractUniqueCountries, filterIndicators, getMinMaxYears, combineData } from '@/utils/WorldBankDataUtils'
 import { GeoJSON } from '@/types/common/GeojsonTypes'
-import { CircularProgress } from '@mui/material'
+import { Button, ButtonGroup, CircularProgress } from '@mui/material'
 import ErrorIcon from '@mui/icons-material/Error'
+import { borderColor } from '@mui/system'
+import { GeoJsonLayer } from '@deck.gl/layers/typed'
 
 interface ChildComponentProps {
   geoJsonData: GeoJSON.FeatureCollection | null
 
-  setWorldBankDataLayer(value: GeoJSON.FeatureCollection | null): void
+  onAddLayer(value: GeoJSON.FeatureCollection | null): void
 
   isLoadingCountryBoundaries: boolean
   errorCountryBoundaries: string | null
+  layers: GeoJsonLayer[]
 }
 
 const SelectMenu: React.FC<ChildComponentProps> = ({
   geoJsonData,
-  setWorldBankDataLayer,
+  onAddLayer,
   isLoadingCountryBoundaries,
   errorCountryBoundaries,
+  layers,
 }) => {
+  const [isLayersTabSelected, setLayersTabSelected] = useState(false)
+  const [isDatasetTabSelected, setDatasetTabSelected] = useState(true)
+  const [isFilterTabSelected, setFilterTabSelected] = useState(false)
   const [open, setOpen] = useState(true)
+
   const [topicOptions, setTopicOptions] = useState<Option[]>([])
   const [indicatorOptions, setIndicatorOptions] = useState<Option[]>([])
   const [countriesOptions, setCountriesOptions] = useState<Option[]>([])
@@ -107,6 +115,22 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
     if (option.length <= 0) setSelectedCountries([])
     setSelectedCountries(option)
   }
+  const handleLayersIconClick = () => {
+    setLayersTabSelected(true)
+    setDatasetTabSelected(false)
+    setFilterTabSelected(false)
+  }
+  const handleFilterIconClick = () => {
+    setFilterTabSelected(true)
+    setLayersTabSelected(false)
+    setDatasetTabSelected(false)
+  }
+
+  const handleDatasetIconClick = () => {
+    setDatasetTabSelected(true)
+    setLayersTabSelected(false)
+    setFilterTabSelected(false)
+  }
 
   const canFetchDataset = () => {
     return selectedTopic && selectedIndicator && !isLoadingTopics && !isLoadingIndicators
@@ -115,8 +139,8 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   const addLayer = () => {
     const filteredIndicators = filterIndicators(selectedCountries, indicatorData, dateRangeStart.getFullYear(), dateRangeEnd.getFullYear())
     const wBankDataLayer = combineData(geoJsonData, filteredIndicators)
-    setWorldBankDataLayer(wBankDataLayer)
     setFilteredIndicatorData(filteredIndicators)
+    onAddLayer(wBankDataLayer)
   }
 
   const canAddLayer = () => {
@@ -158,36 +182,8 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   }
 
   useEffect(() => {
-    console.log(`selectedTopic: ${selectedTopic}`)
-  }, [selectedTopic])
-
-  useEffect(() => {
-    console.log(`selectedIndicator: ${selectedIndicator}`)
-  }, [selectedIndicator])
-
-  useEffect(() => {
-    console.log(`IndicatorOption: ${indicatorOptions}`)
-  }, [indicatorOptions])
-
-  useEffect(() => {
-    console.log(`selectedDateRange: ${dateRangeStart}`)
-  }, [dateRangeStart])
-
-  useEffect(() => {
-    console.log(`selectedDateRangeEnd: ${dateRangeEnd}`)
-  }, [dateRangeEnd])
-
-  useEffect(() => {
     console.log(indicatorData)
   }, [indicatorData])
-
-  useEffect(() => {
-    console.log(countriesOptions)
-  }, [countriesOptions])
-
-  useEffect(() => {
-    console.log(selectedCountries)
-  }, [selectedCountries])
 
   useEffect(() => {
     console.log(filteredIndicatorData)
@@ -199,100 +195,126 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
         <ArrowBackIcon
           onClick={() => setOpen(!open)}
           className={`absolute -right-7 top-0 bg-zinc-600 cursor-pointer rounded-sm hover:bg-zinc-400
-                    ${!open && 'rotate-180'}`}
+                  ${!open && 'rotate-180'}`}
         ></ArrowBackIcon>
 
         <div className='relative h-full'>
-          <Header></Header>
-          <div className='h-[90%] overflow-y-auto overflow-x-hidden'>
+          <Header
+            isLayersTabSelected={isLayersTabSelected}
+            isDatasetTabSelected={isDatasetTabSelected}
+            isFilterTabSelected={isFilterTabSelected}
+            handleFilterIconClick={handleFilterIconClick}
+            handleDatasetIconClick={handleDatasetIconClick}
+            handleLayersIconClick={handleLayersIconClick}
+          ></Header>
+          <div className='h-[80%] overflow-y-auto overflow-x-hidden'>
             <div className='flex flex-col items-center'>
-              {isLoadingCountryBoundaries ? (
-                <div className='flex pt-9 w-[250px] space-x-11 '>
-                  <CircularProgress color='success' />
-                  <h1 className='text-xs mt-4 text-zinc-200 '>LOADING GEODATA...</h1>
-                </div>
-              ) : errorCountryBoundaries ? (
-                <div className='flex pt-11 w-[250px] space-x-2'>
-                  <ErrorIcon sx={{ color: '#f87171' }}></ErrorIcon>
-                  <h1 className='text-xs text-red-400 m-auto'>ERROR: Failed to load geodata</h1>
-                </div>
-              ) : (
+              {isDatasetTabSelected ? (
                 <>
-                  <div className='flex pt-9 w-[250px] justify-between '>
-                    <h1 className='text-xs font-medium mt-4 text-zinc-200 '>DATASETS</h1>
-                    <LoadingButton
-                      className='bg-teal-800'
-                      variant='contained'
-                      disabled={!canFetchDataset()}
-                      onClick={fetchDataset}
-                      loading={isLoadingDataset}
-                    >
-                      Fetch data
-                    </LoadingButton>
-                  </div>
-                  {!isLoadingTopics && !errorTopics && (
-                    <div className='pt-11 w-[250px]'>
-                      <label className='font-thin pb-5'>Topic</label>
-                      <SelectOption
-                        isMultiple={false}
-                        selectOptions={topicOptions}
-                        selectedOption={selectedTopic}
-                        onOptionChange={handleTopicChange}
-                      />
+                  {isLoadingCountryBoundaries ? (
+                    <div className='flex pt-9 w-[250px] space-x-11 '>
+                      <CircularProgress color='success' />
+                      <h1 className='text-xs mt-4 text-zinc-200 '>LOADING GEODATA...</h1>
                     </div>
-                  )}
-                  {selectedTopic && (
-                    <div className=' pt-7 w-[250px]'>
-                      <label className='font-thin mb-4 pb-4'>Indicator</label>
-                      <SelectOption
-                        isMultiple={false}
-                        selectOptions={indicatorOptions}
-                        selectedOption={selectedIndicator}
-                        onOptionChange={handleIndicatorChange}
-                      />
+                  ) : errorCountryBoundaries ? (
+                    <div className='flex pt-11 w-[250px] space-x-2'>
+                      <ErrorIcon sx={{ color: '#f87171' }}></ErrorIcon>
+                      <h1 className='text-xs text-red-400 m-auto'>ERROR: Failed to load geodata</h1>
                     </div>
-                  )}
-                  {indicatorData.length > 0 && (
-                    <div className='pt-10 w-[250px]'>
-                      <div className='flex justify-between pt-5 pb-7'>
-                        <h1 className='font-xs  mt-4 text-zinc-200 '>Filter</h1>
+                  ) : (
+                    <>
+                      <div className='flex pt-9 w-[250px] justify-between '>
+                        <h1 className='font-medium mt-4 text-zinc-200 '>DATASETS</h1>
                         <LoadingButton
-                          className='bg-teal-800 rounded-3xl '
+                          className='bg-teal-800'
                           variant='contained'
-                          size='small'
-                          disabled={!canAddLayer()}
-                          onClick={addLayer}
+                          disabled={!canFetchDataset()}
+                          onClick={fetchDataset}
+                          loading={isLoadingDataset}
                         >
-                          Add Layer
+                          Fetch data
                         </LoadingButton>
                       </div>
-                      <label className='font-thin'>Range</label>
-                      <CustomDateRangePicker
-                        minDate={minDate}
-                        maxDate={maxDate}
-                        dateStart={dateRangeStart}
-                        setDateStart={setDateRangeStart}
-                        dateEnd={dateRangeEnd}
-                        setDateEnd={setDateRangeEnd}
-                        setStartDateError={setStartDateError}
-                        setEndDateError={setEndDateError}
-                        startDateError={startDateError}
-                        endDateError={endDateError}
-                      />
-                    </div>
-                  )}
-                  {indicatorData.length > 0 && (
-                    <div className='pt-7 w-[250px]'>
-                      <label className='font-thin mb-4 pb-4'>Countries</label>
-                      <SelectOption
-                        isMultiple={true}
-                        selectOptions={countriesOptions}
-                        selectedOption={selectedCountries}
-                        onOptionChange={handleCountriesChange}
-                      />
-                    </div>
+                      {!isLoadingTopics && !errorTopics && (
+                        <div className='pt-11 w-[250px]'>
+                          <label className='font-thin pb-5'>Topic</label>
+                          <SelectOption
+                            isMultiple={false}
+                            selectOptions={topicOptions}
+                            selectedOption={selectedTopic}
+                            onOptionChange={handleTopicChange}
+                          />
+                        </div>
+                      )}
+                      {selectedTopic && (
+                        <div className=' pt-7 w-[250px]'>
+                          <label className='font-thin mb-4 pb-4'>Indicator</label>
+                          <SelectOption
+                            isMultiple={false}
+                            selectOptions={indicatorOptions}
+                            selectedOption={selectedIndicator}
+                            onOptionChange={handleIndicatorChange}
+                          />
+                        </div>
+                      )}
+                      {indicatorData.length > 0 && (
+                        <div className='pt-10 w-[250px]'>
+                          <div className='flex justify-between  pb-7'>
+                            <h1 className='font-xs mt-4 text-zinc-200 '>Filter</h1>
+                            <LoadingButton
+                              className='bg-teal-800'
+                              variant='contained'
+                              size='small'
+                              disabled={!canAddLayer()}
+                              onClick={addLayer}
+                            >
+                              Add Layer
+                            </LoadingButton>
+                          </div>
+                          <label className='font-thin'>Range</label>
+                          <CustomDateRangePicker
+                            minDate={minDate}
+                            maxDate={maxDate}
+                            dateStart={dateRangeStart}
+                            setDateStart={setDateRangeStart}
+                            dateEnd={dateRangeEnd}
+                            setDateEnd={setDateRangeEnd}
+                            setStartDateError={setStartDateError}
+                            setEndDateError={setEndDateError}
+                            startDateError={startDateError}
+                            endDateError={endDateError}
+                          />
+                        </div>
+                      )}
+                      {indicatorData.length > 0 && (
+                        <div className='pt-7 w-[250px]'>
+                          <label className='font-thin mb-4 pb-4'>Countries</label>
+                          <SelectOption
+                            isMultiple={true}
+                            selectOptions={countriesOptions}
+                            selectedOption={selectedCountries}
+                            onOptionChange={handleCountriesChange}
+                          />
+                        </div>
+                      )}
+                      <div className='pt-16 pb-7 w-[250px]'>
+                        <div className='h-[1px] w-full bg-zinc-600 mb-2' />
+                        <h1 className='font-medium mt-4 text-zinc-200 mb-4'>LAYERS ({layers.length})</h1>
+                        <ButtonGroup variant='contained' color='success' aria-label='outlined button group' className='w-full'>
+                          <Button className='bg-teal-800 w-1/2 ' size='small' onClick={handleLayersIconClick}>
+                            Manage
+                          </Button>
+                          <Button className='bg-teal-800 w-1/2' size='small' onClick={handleFilterIconClick}>
+                            Filter
+                          </Button>
+                        </ButtonGroup>
+                      </div>
+                    </>
                   )}
                 </>
+              ) : (
+                // Your other components go here
+                <div>{/* Your other components content */}</div>
               )}
             </div>
           </div>
