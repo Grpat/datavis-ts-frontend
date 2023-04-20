@@ -14,8 +14,9 @@ import { allCountries, extractUniqueCountries, filterIndicators, getMinMaxYears,
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 import { Button, ButtonGroup, CircularProgress } from '@mui/material'
 import ErrorIcon from '@mui/icons-material/Error'
-import { borderColor } from '@mui/system'
+
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
+import LayersTab from '@/components/select-menu/layers-tab/LayersTab'
 
 interface ChildComponentProps {
   geoJsonData: GeoJSON.FeatureCollection | null
@@ -25,6 +26,12 @@ interface ChildComponentProps {
   isLoadingCountryBoundaries: boolean
   errorCountryBoundaries: string | null
   layers: GeoJsonLayer[]
+
+  onDeleteLayer(layerId: string): void
+
+  onToggleVisibilityLayer(layerId: string): void
+
+  onCopyLayer(layerId: string): void
 }
 
 const SelectMenu: React.FC<ChildComponentProps> = ({
@@ -33,6 +40,9 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   isLoadingCountryBoundaries,
   errorCountryBoundaries,
   layers,
+  onDeleteLayer,
+  onToggleVisibilityLayer,
+  onCopyLayer,
 }) => {
   const [isLayersTabSelected, setLayersTabSelected] = useState(false)
   const [isDatasetTabSelected, setDatasetTabSelected] = useState(true)
@@ -194,11 +204,11 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
       <div className={`absolute left-5 h-[96%] bg-zinc-900 duration-100 rounded ${open ? 'w-72' : 'w-0'}`}>
         <ArrowBackIcon
           onClick={() => setOpen(!open)}
-          className={`absolute -right-7 top-0 bg-zinc-600 cursor-pointer rounded-sm hover:bg-zinc-400
-                  ${!open && 'rotate-180'}`}
+          className={`absolute -right-7 top-0 bg-zinc-900 cursor-pointer rounded-sm hover:bg-zinc-600
+                ${!open && 'rotate-180'}`}
         ></ArrowBackIcon>
 
-        <div className='relative h-full'>
+        <div className='h-full flex flex-col'>
           <Header
             isLayersTabSelected={isLayersTabSelected}
             isDatasetTabSelected={isDatasetTabSelected}
@@ -207,7 +217,7 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
             handleDatasetIconClick={handleDatasetIconClick}
             handleLayersIconClick={handleLayersIconClick}
           ></Header>
-          <div className='h-[80%] overflow-y-auto overflow-x-hidden'>
+          <div className='flex-1 overflow-y-auto overflow-x-hidden'>
             <div className='flex flex-col items-center'>
               {isDatasetTabSelected ? (
                 <>
@@ -223,11 +233,12 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                     </div>
                   ) : (
                     <>
-                      <div className='flex pt-9 w-[250px] justify-between '>
-                        <h1 className='font-medium mt-4 text-zinc-200 '>DATASETS</h1>
+                      <div className='flex pt-9 w-[250px] justify-between'>
+                        <h1 className='font-medium mt-2 text-zinc-200 '>DATASETS</h1>
                         <LoadingButton
-                          className='bg-teal-800'
+                          className='bg-cyan-900 hover:bg-cyan-800'
                           variant='contained'
+                          size='small'
                           disabled={!canFetchDataset()}
                           onClick={fetchDataset}
                           loading={isLoadingDataset}
@@ -260,9 +271,9 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                       {indicatorData.length > 0 && (
                         <div className='pt-10 w-[250px]'>
                           <div className='flex justify-between  pb-7'>
-                            <h1 className='font-xs mt-4 text-zinc-200 '>Filter</h1>
+                            <h1 className='font-xs mt-2 text-zinc-200 '>Filter</h1>
                             <LoadingButton
-                              className='bg-teal-800'
+                              className='bg-cyan-900 hover:bg-cyan-800'
                               variant='contained'
                               size='small'
                               disabled={!canAddLayer()}
@@ -297,25 +308,31 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                           />
                         </div>
                       )}
-                      <div className='pt-16 pb-7 w-[250px]'>
-                        <div className='h-[1px] w-full bg-zinc-600 mb-2' />
-                        <h1 className='font-medium mt-4 text-zinc-200 mb-4'>LAYERS ({layers.length})</h1>
-                        <ButtonGroup variant='contained' color='success' aria-label='outlined button group' className='w-full'>
-                          <Button className='bg-teal-800 w-1/2 ' size='small' onClick={handleLayersIconClick}>
-                            Manage
-                          </Button>
-                          <Button className='bg-teal-800 w-1/2' size='small' onClick={handleFilterIconClick}>
-                            Filter
-                          </Button>
-                        </ButtonGroup>
-                      </div>
                     </>
                   )}
                 </>
-              ) : (
-                // Your other components go here
-                <div>{/* Your other components content */}</div>
-              )}
+              ) : isLayersTabSelected ? (
+                <LayersTab
+                  layers={layers}
+                  onDeleteLayer={onDeleteLayer}
+                  onToggleVisibilityLayer={onToggleVisibilityLayer}
+                  onCopyLayer={onCopyLayer}
+                ></LayersTab>
+              ) : isFilterTabSelected ? (
+                <div>{/* Your filter tab content */}</div>
+              ) : null}
+              <div className='pt-16 pb-7 w-[250px]'>
+                <div className='h-[1px] w-full bg-zinc-600 mb-2' />
+                <h1 className='font-medium mt-4 text-zinc-200 mb-4'>LAYERS ({layers.length})</h1>
+                <ButtonGroup variant='contained' color='success' aria-label='outlined button group' className='w-full'>
+                  <Button className='bg-cyan-900 hover:bg-cyan-800 w-1/2 ' size='small' onClick={handleLayersIconClick}>
+                    Manage
+                  </Button>
+                  <Button className='bg-cyan-900 hover:bg-cyan-800 w-1/2' size='small' onClick={handleFilterIconClick}>
+                    Filter
+                  </Button>
+                </ButtonGroup>
+              </div>
             </div>
           </div>
         </div>

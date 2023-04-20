@@ -32,7 +32,9 @@
     "react-dom": "18.2.0",
     "react-map-gl": "^7.0.21",
     "react-select": "^5.7.2",
-    "typescript": "5.0.2"
+    "typescript": "5.0.2",
+    "uuid": "^9.0.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",

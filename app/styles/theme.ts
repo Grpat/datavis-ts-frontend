@@ -3,14 +3,14 @@ import { createTheme } from '@mui/material'
 export const theme = createTheme({
   palette: {
     success: {
-      main: '#0d9488', // Replace with your desired color
+      main: '#0891b2', // Replace with your desired color
     },
     text: {
       primary: '#a1a1aa',
     },
   },
   typography: {
-    fontSize: 11,
+    fontSize: 11.5,
   },
   components: {
     MuiCssBaseline: {
