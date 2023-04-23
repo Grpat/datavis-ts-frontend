@@ -13,7 +13,7 @@ import { GeoJSON } from '@/types/common/GeojsonTypes'
 import SelectMenu from '@/components/select-menu/SelectMenu'
 import useHttp from '@/hooks/use-http'
 import { stringToColor } from '@/utils/DeckGlUtils'
-import { generateLayerId, getMinMaxValues, normalizeValue, timestampToYear } from '@/utils/commonUtils'
+import { createColorScale, generateLayerId, getMinMaxValues, normalizeValue, timestampToYear } from '@/utils/commonUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { LayerAttribute, LayerDataRecord, ValueExtractor } from '@/types/common/LayersTypes'
 
@@ -31,9 +31,11 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
   const [layers, setLayers] = useState<GeoJsonLayer[]>([])
   const [layerData, setLayerData] = useState<LayerDataRecord>({})
   const [recentlyAddedLayerId, setRecentlyAddedLayerId] = useState<string | null>(null)
+  const [recentlyUpdatedLayerId, setRecentlyUpdatedLayerId] = useState<string | null>(null)
   const [layerAttributes, setLayerAttributes] = useState<Record<string, LayerAttribute>>({})
   const [filterCondition, setFilter] = useState('')
   const [selectedYear, setSelectedYear] = useState<number | null>(2020)
+  const [hoverInfo, setHoverInfo] = useState<any | null>(null)
 
   const {
     isLoading: isLoadingCountryBoundaries,
@@ -58,15 +60,23 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
     const elevationPropertyExtractor: ValueExtractor = feature => feature.properties?.value as number
     const elevationRange = getMinMaxValues(newLayer, elevationPropertyExtractor)
     const minElevation = 0
-    const maxElevation = 500000
+    const maxElevation = 10000
+    const visible = true
+    const opacity = 0.5
+    const colorScale = 50
+    const colorPropertyExtractor: ValueExtractor = feature => feature.properties?.value as number
 
     setLayerAttributes(prevAttributes => ({
       ...prevAttributes,
       [layerId]: {
         elevationRange,
         elevationPropertyExtractor,
+        colorPropertyExtractor,
         minElevation,
         maxElevation,
+        visible,
+        opacity,
+        colorScale,
       },
     }))
     setLayerData(prevLayerData => ({
@@ -81,6 +91,7 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       setLayers(prevLayers => [...prevLayers, newLayer])
     }
   }, [recentlyAddedLayerId])
+
   const handleDeleteLayer = (layerId: string) => {
     setLayers(prevLayers => prevLayers.filter(layer => layer.id !== layerId))
     setLayerData(prevLayerData => {
@@ -89,33 +100,95 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       return updatedLayerData
     })
   }
-  const updateLayerVisibility = (layer: GeoJsonLayer, visible: boolean): GeoJsonLayer => {
-    const clonedLayer = layer.clone({ visible })
-    return clonedLayer
-  }
 
   const handleVisibilityLayer = (layerId: string) => {
-    setLayers(prevLayers => prevLayers.map(layer => (layer.id === layerId ? updateLayerVisibility(layer, !layer.props.visible) : layer)))
+    setLayerAttributes(prevLayerAttributes => ({
+      ...prevLayerAttributes,
+      [layerId]: {
+        ...prevLayerAttributes[layerId],
+        visible: !prevLayerAttributes[layerId].visible,
+      },
+    }))
+    setRecentlyUpdatedLayerId(layerId)
   }
+  const handleColorScaleChange = (layerId: string, newColorScaleValue: number) => {
+    setLayerAttributes(prevLayerAttributes => ({
+      ...prevLayerAttributes,
+      [layerId]: {
+        ...prevLayerAttributes[layerId],
+        colorScale: newColorScaleValue,
+      },
+    }))
+    setRecentlyUpdatedLayerId(layerId)
+  }
+  useEffect(() => {
+    if (!recentlyUpdatedLayerId) return
+
+    setLayers(prevLayers => {
+      return prevLayers.map(layer => {
+        if (layer.id === recentlyUpdatedLayerId) {
+          return createGeoJsonLayer(recentlyUpdatedLayerId)
+        }
+        return layer
+      })
+    })
+    setRecentlyUpdatedLayerId(null)
+  }, [layerAttributes])
 
   const handleCopyLayer = (layerId: string) => {
-    setLayers(prevLayers => {
-      const layerToCopy = prevLayers.find(layer => layer.id === layerId)
-      return layerToCopy ? [...prevLayers, layerToCopy.clone({ id: layerToCopy.id.replace(/[^|]+$/, uuidv4()) })] : prevLayers
-    })
+    const layerToCopy = layers.find(layer => layer.id === layerId)
+    if (!layerToCopy) return
+
+    const newLayerId = layerToCopy.id.replace(/[^|]+$/, uuidv4())
+
+    // Copy layer attributes
+    setLayerAttributes(prevLayerAttributes => ({
+      ...prevLayerAttributes,
+      [newLayerId]: {
+        ...prevLayerAttributes[layerId],
+        visible: true,
+      },
+    }))
+
+    // Copy layer data
+    setLayerData(prevLayerData => ({
+      ...prevLayerData,
+      [newLayerId]: layerData[layerId],
+    }))
+    setRecentlyAddedLayerId(newLayerId)
   }
+  const handleElevationRangeChange = (layerId: string, newMaxElevation: number) => {
+    setLayerAttributes(prevLayerAttributes => ({
+      ...prevLayerAttributes,
+      [layerId]: {
+        ...prevLayerAttributes[layerId],
+        maxElevation: newMaxElevation * 20000,
+      },
+    }))
+    setRecentlyUpdatedLayerId(layerId)
+  }
+  const handleOpacityChange = (layerId: string, newOpacityValue: number) => {
+    setLayerAttributes(prevLayerAttributes => ({
+      ...prevLayerAttributes,
+      [layerId]: {
+        ...prevLayerAttributes[layerId],
+        opacity: newOpacityValue,
+      },
+    }))
+    setRecentlyUpdatedLayerId(layerId)
+  }
+
   const createGeoJsonLayer = (layerId: string) => {
-    const layerAttribute = layerAttributes[layerId] || {
-      elevationRange: [0, 1],
-      elevationPropertyExtractor: () => 0,
-      minElevation: 0,
-      maxElevation: 500000,
-    }
+    const colorScale = createColorScale(
+      layerAttributes[layerId].elevationRange[0],
+      layerAttributes[layerId].elevationRange[1],
+      layerAttributes[layerId].colorScale,
+    )
     return new GeoJsonLayer({
       id: layerId,
       data: layerData[layerId],
-      opacity: 0.6,
-      visible: true,
+      opacity: layerAttributes[layerId].opacity,
+      visible: layerAttributes[layerId].visible,
       stroked: true,
       filled: true,
       extruded: true,
@@ -127,25 +200,30 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       },
       filterRange: [1, 1],
       extensions: [new DataFilterExtension({ filterSize: 1 })],
-      updateTriggers: {
-        getFilterValue: [selectedYear],
-      },
+
       getElevation: (f: any) => {
         if (!f.properties) return 0
-        const value = layerAttribute.elevationPropertyExtractor(f)
         return normalizeValue(
-          value,
-          layerAttribute.elevationRange[0],
-          layerAttribute.elevationRange[1],
-          layerAttribute.minElevation,
-          layerAttribute.maxElevation,
+          layerAttributes[layerId].elevationPropertyExtractor(f),
+          layerAttributes[layerId].elevationRange[0],
+          layerAttributes[layerId].elevationRange[1],
+          layerAttributes[layerId].minElevation,
+          layerAttributes[layerId].maxElevation,
         )
       },
-      getFillColor: f => {
-        if (!f.properties || !f.properties.country) return [0, 0, 0]
-        return stringToColor(f.properties.country, 256)
+      // @ts-ignore
+      getFillColor: (f: any) => {
+        if (!f.properties) return [0, 0, 0]
+        const colorPropertyValue = layerAttributes[layerId].colorPropertyExtractor(f)
+        const fillColor = colorScale(colorPropertyValue)
+        return fillColor
       },
-      getLineColor: [255, 255, 255],
+      updateTriggers: {
+        getFilterValue: [selectedYear],
+        getElevation: [layerAttributes[layerId].maxElevation],
+        getFillColor: [layerAttributes[layerId].colorScale],
+      },
+      onHover: info => setHoverInfo(info),
       pickable: true,
     })
   }
@@ -160,6 +238,9 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
   useEffect(() => {
     console.log(layers)
   }, [layers])
+  useEffect(() => {
+    console.log(layerAttributes)
+  }, [layerAttributes])
 
   return (
     <div>
@@ -171,17 +252,34 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         onDeleteLayer={handleDeleteLayer}
         onToggleVisibilityLayer={handleVisibilityLayer}
         onCopyLayer={handleCopyLayer}
+        onElevationRangeChange={handleElevationRangeChange}
+        onOpacityChange={handleOpacityChange}
+        onColorScaleChange={handleColorScaleChange}
         layers={layers}
       ></SelectMenu>
-      <DeckGL
-        layers={geoJsonData ? layers : []}
-        initialViewState={INITIAL_VIEW_STATE}
-        controller={true}
-        /* getTooltip={getTooltip} */
-        effects={[LIGHTNING_EFFECT]}
-      >
+      <DeckGL layers={geoJsonData ? layers : []} initialViewState={INITIAL_VIEW_STATE} controller={true} effects={[LIGHTNING_EFFECT]}>
         <Map {...mapOptions} />
       </DeckGL>
+      {hoverInfo?.object && (
+        <div
+          style={{
+            position: 'fixed',
+            zIndex: 1,
+            pointerEvents: 'none',
+            left: hoverInfo.x,
+            top: hoverInfo.y,
+            backgroundColor: '#27272a',
+            padding: '8px',
+            borderRadius: '4px',
+          }}
+        >
+          {Object.entries(hoverInfo.object.properties).map(([key, value], index) => (
+            <div key={index}>
+              <strong>{key}:</strong> {value as string}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

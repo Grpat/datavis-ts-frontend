@@ -6,6 +6,10 @@ export type LayerDataRecord = Record<string, GeoJSON.FeatureCollection>
 export type LayerAttribute = {
   elevationRange: [number, number]
   elevationPropertyExtractor: ValueExtractor
+  colorPropertyExtractor: ValueExtractor
   minElevation: number
   maxElevation: number
+  visible: boolean
+  opacity: number
+  colorScale: number
 }

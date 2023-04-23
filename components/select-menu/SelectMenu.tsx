@@ -17,6 +17,7 @@ import ErrorIcon from '@mui/icons-material/Error'
 
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 import LayersTab from '@/components/select-menu/layers-tab/LayersTab'
+import FiltersTab from '@/components/select-menu/layers-filters/FiltersTab'
 
 interface ChildComponentProps {
   geoJsonData: GeoJSON.FeatureCollection | null
@@ -32,6 +33,10 @@ interface ChildComponentProps {
   onToggleVisibilityLayer(layerId: string): void
 
   onCopyLayer(layerId: string): void
+
+  onElevationRangeChange: (layerId: string, newElevationRange: number) => void
+  onOpacityChange: (layerId: string, newOpacityValue: number) => void
+  onColorScaleChange: (layerId: string, newOpacityValue: number) => void
 }
 
 const SelectMenu: React.FC<ChildComponentProps> = ({
@@ -43,6 +48,9 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   onDeleteLayer,
   onToggleVisibilityLayer,
   onCopyLayer,
+  onElevationRangeChange,
+  onColorScaleChange,
+  onOpacityChange,
 }) => {
   const [isLayersTabSelected, setLayersTabSelected] = useState(false)
   const [isDatasetTabSelected, setDatasetTabSelected] = useState(true)
@@ -317,9 +325,12 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                   onDeleteLayer={onDeleteLayer}
                   onToggleVisibilityLayer={onToggleVisibilityLayer}
                   onCopyLayer={onCopyLayer}
+                  onElevationRangeChange={onElevationRangeChange}
+                  onColorScaleChange={onColorScaleChange}
+                  onOpacityChange={onOpacityChange}
                 ></LayersTab>
               ) : isFilterTabSelected ? (
-                <div>{/* Your filter tab content */}</div>
+                <FiltersTab layers={layers}></FiltersTab>
               ) : null}
               <div className='pt-16 pb-7 w-[250px]'>
                 <div className='h-[1px] w-full bg-zinc-600 mb-2' />

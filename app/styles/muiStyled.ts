@@ -7,6 +7,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import { Slider } from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
 
 export const CustomAutocomplete = styled(Autocomplete)({
   overflow: 'hidden',
@@ -63,3 +65,28 @@ export const CustomDropDown = styled(ArrowDropDownIcon)`
     color: #e4e4e7;
   }
 `
+export const CustomAddIcon = styled(AddIcon)`
+  font-size: small;
+
+  &:hover {
+    color: #e4e4e7;
+  }
+`
+export const CustomSlider = styled(Slider)({
+  color: '#64748b',
+
+  '& .MuiSlider-thumb': {
+    borderRadius: '1px',
+    width: '13px',
+    height: '13px',
+  },
+  '& .MuiSlider-rail': {
+    height: '4px',
+    borderRadius: '0px',
+  },
+  '& .MuiSlider-track': {
+    height: '4px',
+    borderRadius: '0px',
+  },
+  '& .MuiSlider-mark': { borderRadius: '0px', backgroundColor: '#cbd5e1' },
+})

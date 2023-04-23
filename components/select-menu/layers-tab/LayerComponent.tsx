@@ -17,13 +17,29 @@ interface LayerComponentProps {
 
   onToggleVisibilityLayer(layerId: string): void
 
+  onElevationRangeChange: (layerId: string, newElevationRange: number) => void
+  onOpacityChange: (layerId: string, newOpacityValue: number) => void
+  onColorScaleChange: (layerId: string, newOpacityValue: number) => void
+
   onCopyLayer(layerId: string): void
+
+  visibility: boolean
 }
 
-const LayerComponent: React.FC<LayerComponentProps> = ({ layer, onDeleteLayer, onToggleVisibilityLayer, onCopyLayer }) => {
+const LayerComponent: React.FC<LayerComponentProps> = ({
+  layer,
+  onDeleteLayer,
+  onToggleVisibilityLayer,
+  onCopyLayer,
+  onElevationRangeChange,
+  onOpacityChange,
+  onColorScaleChange,
+  visibility,
+}) => {
   const layerInfo = layer.id.split('|').slice(0, -1)
-  const [isVisible, setIsVisible] = useState<boolean>(true)
+  const [isVisible, setIsVisible] = useState<boolean>(visibility)
   const [openSettings, setOpenSettings] = useState<boolean>(false)
+  const [isSelectedLayer, setIsSelectedLayer] = useState<boolean>(false)
   const handleDeleteClick = () => {
     onDeleteLayer(layer.id)
   }
@@ -35,36 +51,53 @@ const LayerComponent: React.FC<LayerComponentProps> = ({ layer, onDeleteLayer, o
   const handleCopyClick = () => {
     onCopyLayer(layer.id)
   }
+  const handleOpenSettings = () => {
+    setIsSelectedLayer(prevState => !prevState)
+    setOpenSettings(!openSettings)
+  }
   return (
-    <div className='flex mt-2 h-12 w-[250px] bg-zinc-800 rounded-sm hover:bg-zinc-700 transition-colors duration-300 justify-center  cursor-pointer border-l-2 border-cyan-400'>
-      <div className='flex flex-col space-y-1  w-[200px] justify-center'>
-        {layerInfo.map((info, index) => (
-          <p key={index} className='ml-4 text-xs text-zinc-300 font-thin mr-2'>
-            {info}
-          </p>
-        ))}
-      </div>
-      <div className='layer-icons flex items-center '>
-        <Tooltip title='Remove Layer' arrow>
-          <CustomDeleteIcon onClick={handleDeleteClick} className='mr-1'></CustomDeleteIcon>
-        </Tooltip>
-        <Tooltip title='Duplicate layer' arrow>
-          <CustomContentCopyIcon onClick={handleCopyClick} className='mr-1'></CustomContentCopyIcon>
-        </Tooltip>
-        {isVisible ? (
-          <Tooltip title='Hide layer' arrow>
-            <CustomVisibilityIcon onClick={handleVisibilityClick} className='mr-1'></CustomVisibilityIcon>
+    <div>
+      <div
+        className={`flex mt-2 h-12 w-[230px] bg-zinc-800 rounded-sm hover:bg-zinc-700 transition-colors duration-300 justify-center cursor-pointer ${
+          isSelectedLayer === true ? 'ml-2 border-l-4 border-indigo-600' : 'border-l-2 border-cyan-400'
+        }`}
+      >
+        <div className='flex flex-col space-y-1  w-[200px] justify-center'>
+          {layerInfo.map((info, index) => (
+            <p key={index} className='ml-4 text-xs text-zinc-400 font-thin mr-2'>
+              {info}
+            </p>
+          ))}
+        </div>
+        <div className='layer-icons flex items-center '>
+          <Tooltip title='Remove Layer' arrow>
+            <CustomDeleteIcon onClick={handleDeleteClick} className='mr-1'></CustomDeleteIcon>
           </Tooltip>
-        ) : (
-          <Tooltip title='Show layer' arrow>
-            <CustomVisibilityOffIcon onClick={handleVisibilityClick} className='mr-1'></CustomVisibilityOffIcon>
+          <Tooltip title='Duplicate layer' arrow>
+            <CustomContentCopyIcon onClick={handleCopyClick} className='mr-1'></CustomContentCopyIcon>
           </Tooltip>
-        )}
-        <Tooltip title='Layer settings' arrow>
-          <CustomDropDown onClick={() => setOpenSettings(!openSettings)} className='mr-1 ml-1'></CustomDropDown>
-        </Tooltip>
-        {openSettings && <LayerSettings></LayerSettings>}
+          {isVisible ? (
+            <Tooltip title='Hide layer' arrow>
+              <CustomVisibilityIcon onClick={handleVisibilityClick} className='mr-1'></CustomVisibilityIcon>
+            </Tooltip>
+          ) : (
+            <Tooltip title='Show layer' arrow>
+              <CustomVisibilityOffIcon onClick={handleVisibilityClick} className='mr-1'></CustomVisibilityOffIcon>
+            </Tooltip>
+          )}
+          <Tooltip title='Layer settings' arrow>
+            <CustomDropDown onClick={handleOpenSettings} className='mr-1 ml-1'></CustomDropDown>
+          </Tooltip>
+        </div>
       </div>
+      {openSettings && (
+        <LayerSettings
+          onElevationRangeChange={onElevationRangeChange}
+          onOpacityChange={onOpacityChange}
+          onColorScaleChange={onColorScaleChange}
+          layerId={layer.id}
+        ></LayerSettings>
+      )}
     </div>
   )
 }
