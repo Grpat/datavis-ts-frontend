@@ -18,6 +18,7 @@ import ErrorIcon from '@mui/icons-material/Error'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 import LayersTab from '@/components/select-menu/layers-tab/LayersTab'
 import FiltersTab from '@/components/select-menu/layers-filters/FiltersTab'
+import { FilterCondition, LayerAttribute, LayerDataRecord } from '@/types/common/LayersTypes'
 
 interface ChildComponentProps {
   geoJsonData: GeoJSON.FeatureCollection | null
@@ -27,6 +28,7 @@ interface ChildComponentProps {
   isLoadingCountryBoundaries: boolean
   errorCountryBoundaries: string | null
   layers: GeoJsonLayer[]
+  layersData: LayerDataRecord
 
   onDeleteLayer(layerId: string): void
 
@@ -34,13 +36,21 @@ interface ChildComponentProps {
 
   onCopyLayer(layerId: string): void
 
+  //filterConditions: FilterCondition[]
+
   onElevationRangeChange: (layerId: string, newElevationRange: number) => void
   onOpacityChange: (layerId: string, newOpacityValue: number) => void
   onColorScaleChange: (layerId: string, newOpacityValue: number) => void
+  onPropertySelected: (property: string | null, layerId: string, min: number, max: number, filterIndex: number) => void
+  onSliderChange: (layerId: string, selectedProperty: string | null, newValue: number[] | number) => void
+  filters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>
+  setFilters: (newFilters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>) => void
+  layerAttributes: Record<string, LayerAttribute>
 }
 
 const SelectMenu: React.FC<ChildComponentProps> = ({
   geoJsonData,
+  layersData,
   onAddLayer,
   isLoadingCountryBoundaries,
   errorCountryBoundaries,
@@ -51,6 +61,11 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   onElevationRangeChange,
   onColorScaleChange,
   onOpacityChange,
+  onPropertySelected,
+  onSliderChange,
+  filters,
+  setFilters,
+  layerAttributes,
 }) => {
   const [isLayersTabSelected, setLayersTabSelected] = useState(false)
   const [isDatasetTabSelected, setDatasetTabSelected] = useState(true)
@@ -330,7 +345,15 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                   onOpacityChange={onOpacityChange}
                 ></LayersTab>
               ) : isFilterTabSelected ? (
-                <FiltersTab layers={layers}></FiltersTab>
+                <FiltersTab
+                  layers={layers}
+                  layersData={layersData}
+                  onPropertySelected={onPropertySelected}
+                  onSliderChange={onSliderChange}
+                  layerAttributes={layerAttributes}
+                  filters={filters}
+                  setFilters={setFilters}
+                ></FiltersTab>
               ) : null}
               <div className='pt-16 pb-7 w-[250px]'>
                 <div className='h-[1px] w-full bg-zinc-600 mb-2' />

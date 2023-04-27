@@ -29,7 +29,8 @@ export const getMinMaxValues = (data: GeoJSON.FeatureCollection, valueExtractor:
       maxValue = Math.max(maxValue, value)
     }
   })
-
+  console.log(minValue)
+  console.log(maxValue)
   return [minValue, maxValue]
 }
 export const normalizeValue = (value: number, minValue: number, maxValue: number, newMin: number, newMax: number): number => {

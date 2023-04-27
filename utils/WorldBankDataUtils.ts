@@ -99,12 +99,14 @@ export function combineData(
       if (matchingIndicatorDataArray) {
         matchingIndicatorDataArray.forEach(matchingIndicatorData => {
           const timestamp = new Date(matchingIndicatorData.date).getTime()
+          const date = parseInt(matchingIndicatorData.date)
 
           const updatedProperties: Record<string, unknown> = {
             ...feature.properties,
             indicatorValue: matchingIndicatorData.indicator.value,
             indicatorId: matchingIndicatorData.indicator.id,
             value: matchingIndicatorData.value,
+            date,
             timestamp,
           }
 

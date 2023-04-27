@@ -7,7 +7,7 @@ import DeckGL from '@deck.gl/react/typed'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 import { DataFilterExtension } from '@deck.gl/extensions/typed'
 
-import { MAP_STYLE, MAP_STYLE2, LIGHTNING_EFFECT, MATERIAL, INITIAL_VIEW_STATE, COLOR_RANGE } from '@/lib/mapconfig'
+import { MAP_STYLE, LIGHTNING_EFFECT, MATERIAL, INITIAL_VIEW_STATE } from '@/lib/mapconfig'
 
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 import SelectMenu from '@/components/select-menu/SelectMenu'
@@ -15,7 +15,7 @@ import useHttp from '@/hooks/use-http'
 import { stringToColor } from '@/utils/DeckGlUtils'
 import { createColorScale, generateLayerId, getMinMaxValues, normalizeValue, timestampToYear } from '@/utils/commonUtils'
 import { v4 as uuidv4 } from 'uuid'
-import { LayerAttribute, LayerDataRecord, ValueExtractor } from '@/types/common/LayersTypes'
+import { FilterCondition, LayerAttribute, LayerDataRecord, ValueExtractor } from '@/types/common/LayersTypes'
 
 const mapOptions = {
   reuseMaps: true,
@@ -33,9 +33,10 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
   const [recentlyAddedLayerId, setRecentlyAddedLayerId] = useState<string | null>(null)
   const [recentlyUpdatedLayerId, setRecentlyUpdatedLayerId] = useState<string | null>(null)
   const [layerAttributes, setLayerAttributes] = useState<Record<string, LayerAttribute>>({})
-  const [filterCondition, setFilter] = useState('')
-  const [selectedYear, setSelectedYear] = useState<number | null>(2020)
   const [hoverInfo, setHoverInfo] = useState<any | null>(null)
+  const [filters, setFilters] = useState<Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>>(
+    {},
+  )
 
   const {
     isLoading: isLoadingCountryBoundaries,
@@ -77,6 +78,7 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         visible,
         opacity,
         colorScale,
+        filterConditions: [],
       },
     }))
     setLayerData(prevLayerData => ({
@@ -91,6 +93,29 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       setLayers(prevLayers => [...prevLayers, newLayer])
     }
   }, [recentlyAddedLayerId])
+
+  const handleFilterConditionSliderChange = (layerId: string, selectedProperty: string | null, newSliderValue: number[] | number) => {
+    setLayerAttributes(prevLayerAttributes => {
+      const updatedLayerAttributes = { ...prevLayerAttributes }
+      const filterConditions = updatedLayerAttributes[layerId].filterConditions
+
+      // Find the filter condition with the specified selectedProperty and update its sliderValue
+      const filterConditionIndex = filterConditions.findIndex(condition => condition.selectedProperty === selectedProperty)
+
+      if (Array.isArray(newSliderValue)) {
+        const [minValue, maxValue] = newSliderValue
+        filterConditions[filterConditionIndex].sliderValue = [minValue, maxValue]
+        filterConditions[filterConditionIndex].minValue = minValue
+        filterConditions[filterConditionIndex].maxValue = maxValue
+      } else {
+        filterConditions[filterConditionIndex].sliderValue = [newSliderValue, newSliderValue]
+        filterConditions[filterConditionIndex].minValue = newSliderValue
+        filterConditions[filterConditionIndex].maxValue = newSliderValue
+      }
+      return updatedLayerAttributes
+    })
+    setRecentlyUpdatedLayerId(layerId)
+  }
 
   const handleDeleteLayer = (layerId: string) => {
     setLayers(prevLayers => prevLayers.filter(layer => layer.id !== layerId))
@@ -141,7 +166,6 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
 
     const newLayerId = layerToCopy.id.replace(/[^|]+$/, uuidv4())
 
-    // Copy layer attributes
     setLayerAttributes(prevLayerAttributes => ({
       ...prevLayerAttributes,
       [newLayerId]: {
@@ -150,7 +174,6 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       },
     }))
 
-    // Copy layer data
     setLayerData(prevLayerData => ({
       ...prevLayerData,
       [newLayerId]: layerData[layerId],
@@ -177,6 +200,34 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
     }))
     setRecentlyUpdatedLayerId(layerId)
   }
+  const handleAddNewFilter = (selectedProperty: string | null, layerId: string | null, min: number, max: number, filterIndex: number) => {
+    if (!layerId || !selectedProperty) return
+    addFilterCondition(layerId, selectedProperty, min, max, filterIndex)
+    setRecentlyUpdatedLayerId(layerId)
+  }
+  const addFilterCondition = (layerId: string, selectedProperty: string, minValue: number, maxValue: number, filterIndex: number) => {
+    setLayerAttributes((prevLayerAttributes: Record<string, LayerAttribute>): Record<string, LayerAttribute> => {
+      const existingFilterConditions = prevLayerAttributes[layerId]?.filterConditions || []
+      const updatedLayerAttributes: Record<string, LayerAttribute> = {
+        ...prevLayerAttributes,
+        [layerId]: {
+          ...prevLayerAttributes[layerId],
+          filterConditions: [
+            ...existingFilterConditions,
+            {
+              index: filterIndex,
+              selectedProperty,
+              minValue,
+              maxValue,
+              sliderValue: [minValue, maxValue],
+            },
+          ],
+        },
+      }
+      return updatedLayerAttributes
+    })
+    setRecentlyUpdatedLayerId(layerId)
+  }
 
   const createGeoJsonLayer = (layerId: string) => {
     const colorScale = createColorScale(
@@ -184,6 +235,7 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       layerAttributes[layerId].elevationRange[1],
       layerAttributes[layerId].colorScale,
     )
+
     return new GeoJsonLayer({
       id: layerId,
       data: layerData[layerId],
@@ -194,9 +246,15 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       extruded: true,
       wireframe: false,
       getFilterValue: (f: any) => {
-        if (!f.properties || !f.properties.timestamp) return 0
-        const featureYear = timestampToYear(f.properties.timestamp)
-        return featureYear === selectedYear ? 1 : 0
+        if (!f.properties || layerAttributes[layerId].filterConditions.length === 0) return 1
+        const layerFilterConditions = layerAttributes[layerId].filterConditions
+        const isFilterConditionMet = layerFilterConditions.every(filterCondition => {
+          return (
+            f.properties[filterCondition.selectedProperty] >= filterCondition.minValue &&
+            f.properties[filterCondition.selectedProperty] <= filterCondition.maxValue
+          )
+        })
+        return isFilterConditionMet ? 1 : 0
       },
       filterRange: [1, 1],
       extensions: [new DataFilterExtension({ filterSize: 1 })],
@@ -219,7 +277,7 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         return fillColor
       },
       updateTriggers: {
-        getFilterValue: [selectedYear],
+        getFilterValue: [layerAttributes[layerId].filterConditions, Math.random()],
         getElevation: [layerAttributes[layerId].maxElevation],
         getFillColor: [layerAttributes[layerId].colorScale],
       },
@@ -228,19 +286,22 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
     })
   }
 
-  useEffect(() => {
-    console.log(geoJsonData)
-  }, [geoJsonData])
-  useEffect(() => {
-    console.log('layers changed')
-  }, [layers])
-
-  useEffect(() => {
-    console.log(layers)
-  }, [layers])
-  useEffect(() => {
-    console.log(layerAttributes)
-  }, [layerAttributes])
+  /*useEffect(() => {
+      console.log(geoJsonData)
+    }, [geoJsonData])
+    useEffect(() => {
+      console.log('layers changed')
+    }, [layers])
+  
+    useEffect(() => {
+      console.log(layers)
+    }, [layers])
+    useEffect(() => {
+      console.log(layerAttributes)
+    }, [layerAttributes])
+    useEffect(() => {
+      console.log(layerData)
+    }, [layerData])*/
 
   return (
     <div>
@@ -255,7 +316,13 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         onElevationRangeChange={handleElevationRangeChange}
         onOpacityChange={handleOpacityChange}
         onColorScaleChange={handleColorScaleChange}
+        layersData={layerData}
         layers={layers}
+        onPropertySelected={handleAddNewFilter}
+        onSliderChange={handleFilterConditionSliderChange}
+        filters={filters}
+        setFilters={setFilters}
+        layerAttributes={layerAttributes}
       ></SelectMenu>
       <DeckGL layers={geoJsonData ? layers : []} initialViewState={INITIAL_VIEW_STATE} controller={true} effects={[LIGHTNING_EFFECT]}>
         <Map {...mapOptions} />

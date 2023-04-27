@@ -31,7 +31,7 @@ const SelectOption: React.FC<ChildComponentProps> = ({ selectOptions, selectedOp
   }
 
   return (
-    <div className='select-option'>
+    <div className='select-option w-full'>
       <CustomAutocomplete
         {...defaultProps}
         value={selectedOption}

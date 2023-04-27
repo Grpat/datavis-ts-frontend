@@ -58,7 +58,7 @@ const LayerComponent: React.FC<LayerComponentProps> = ({
   return (
     <div>
       <div
-        className={`flex mt-2 h-12 w-[230px] bg-zinc-800 rounded-sm hover:bg-zinc-700 transition-colors duration-300 justify-center cursor-pointer ${
+        className={`flex mt-2 h-12 w-[250px] bg-zinc-800 rounded-sm hover:bg-zinc-700 transition-colors duration-300 justify-center cursor-pointer ${
           isSelectedLayer === true ? 'ml-2 border-l-4 border-indigo-600' : 'border-l-2 border-cyan-400'
         }`}
       >
