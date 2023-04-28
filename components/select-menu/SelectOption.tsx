@@ -34,6 +34,7 @@ const SelectOption: React.FC<ChildComponentProps> = ({ selectOptions, selectedOp
     <div className='select-option w-full'>
       <CustomAutocomplete
         {...defaultProps}
+        isOptionEqualToValue={(option, value) => (option as Option).value === (value as Option).value}
         value={selectedOption}
         renderOption={(props, option) => {
           const typedOption = option as Option

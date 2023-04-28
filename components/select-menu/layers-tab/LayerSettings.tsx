@@ -20,7 +20,6 @@ const LayerSettings: React.FC<LayerSettingsProps> = ({ onElevationRangeChange, o
           defaultValue={10}
           valueLabelDisplay='auto'
           step={5}
-          marks
           onChange={(event, newValue) => {
             onElevationRangeChange(layerId, newValue as number)
           }}
@@ -52,7 +51,6 @@ const LayerSettings: React.FC<LayerSettingsProps> = ({ onElevationRangeChange, o
           defaultValue={50}
           valueLabelDisplay='auto'
           step={20}
-          marks
           onChange={(event, newValue) => {
             onColorScaleChange(layerId, newValue as number)
           }}

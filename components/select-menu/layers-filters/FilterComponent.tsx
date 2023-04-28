@@ -7,6 +7,7 @@ import {
   CustomVisibilityOffIcon,
   CustomDropDown,
   CustomAddIcon,
+  CustomClearAllIcon,
 } from '@/app/styles/muiStyled'
 import { Tooltip } from '@mui/material'
 import FilterOptions from '@/components/select-menu/layers-filters/FilterOptions'
@@ -21,6 +22,8 @@ interface FilterComponentProps {
   //onFiltersChange: (layerId: string, newFilters: Array<{ property: string | null; min: number; max: number; filterIndex: number }>) => void
   setFilters: (newFilters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>) => void
   layerAttributes: Record<string, LayerAttribute>
+  onFilterConditionDelete: (layerId: string, filterIndex: number) => void
+  onClearAllFilters: (layerId: string) => void
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
@@ -28,10 +31,11 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   layer,
   onPropertySelected,
   onSliderChange,
-  //onFiltersChange,
   filters,
   setFilters,
   layerAttributes,
+  onFilterConditionDelete,
+  onClearAllFilters,
 }) => {
   const layerInfo = layer.id.split('|').slice(0, -1)
 
@@ -41,6 +45,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const handleOpenFilterOptions = () => {
     setIsSelectedLayer(prevState => !prevState)
     setOpenFilterOptions(!openFilterOptions)
+  }
+  const handleClearAllFilters = () => {
+    onClearAllFilters(layer.id)
   }
   return (
     <div className='flex flex-col items-center'>
@@ -57,6 +64,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           ))}
         </div>
         <div className='layer-icons flex items-center '>
+          <Tooltip title='Clear Filters' arrow>
+            <CustomClearAllIcon onClick={handleClearAllFilters} className='mr-1 ml-1'></CustomClearAllIcon>
+          </Tooltip>
           <Tooltip title='Layer Filters' arrow>
             <CustomDropDown onClick={handleOpenFilterOptions} className='mr-1 ml-1'></CustomDropDown>
           </Tooltip>
@@ -73,6 +83,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           }}
           filters={filters[layer.id] || []}
           layerAttributes={layerAttributes}
+          onFilterConditionDelete={onFilterConditionDelete}
         ></FilterOptions>
       )}
     </div>

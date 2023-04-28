@@ -124,6 +124,11 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
       delete updatedLayerData[layerId]
       return updatedLayerData
     })
+    setLayerAttributes(prevLayerAttributes => {
+      const updatedLayerAttributes = { ...prevLayerAttributes }
+      delete updatedLayerAttributes[layerId]
+      return updatedLayerAttributes
+    })
   }
 
   const handleVisibilityLayer = (layerId: string) => {
@@ -228,6 +233,38 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
     })
     setRecentlyUpdatedLayerId(layerId)
   }
+  const handleFilterConditionDelete = (layerId: string, filterIndex: number) => {
+    setLayerAttributes(prevLayerAttributes => {
+      const newFilterConditions = prevLayerAttributes[layerId].filterConditions.filter(condition => condition.index !== filterIndex)
+
+      return {
+        ...prevLayerAttributes,
+        [layerId]: {
+          ...prevLayerAttributes[layerId],
+          filterConditions: newFilterConditions,
+        },
+      }
+    })
+    setRecentlyUpdatedLayerId(layerId)
+  }
+  const handleClearAllFilters = (layerId: string) => {
+    setLayerAttributes(prevLayerAttributes => {
+      return {
+        ...prevLayerAttributes,
+        [layerId]: {
+          ...prevLayerAttributes[layerId],
+          filterConditions: [],
+        },
+      }
+    })
+    setFilters(prevFilters => {
+      return {
+        ...prevFilters,
+        [layerId]: [],
+      }
+    })
+    setRecentlyUpdatedLayerId(layerId)
+  }
 
   const createGeoJsonLayer = (layerId: string) => {
     const colorScale = createColorScale(
@@ -287,21 +324,21 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
   }
 
   /*useEffect(() => {
-      console.log(geoJsonData)
-    }, [geoJsonData])
-    useEffect(() => {
-      console.log('layers changed')
-    }, [layers])
-  
-    useEffect(() => {
-      console.log(layers)
-    }, [layers])
-    useEffect(() => {
-      console.log(layerAttributes)
-    }, [layerAttributes])
-    useEffect(() => {
-      console.log(layerData)
-    }, [layerData])*/
+        console.log(geoJsonData)
+      }, [geoJsonData])
+      useEffect(() => {
+        console.log('layers changed')
+      }, [layers])
+    
+      useEffect(() => {
+        console.log(layers)
+      }, [layers])
+      useEffect(() => {
+        console.log(layerAttributes)
+      }, [layerAttributes])
+      useEffect(() => {
+        console.log(layerData)
+      }, [layerData])*/
 
   return (
     <div>
@@ -323,6 +360,8 @@ const DeckGlMap: React.FC<ChildComponentProps> = ({}) => {
         filters={filters}
         setFilters={setFilters}
         layerAttributes={layerAttributes}
+        onFilterConditionDelete={handleFilterConditionDelete}
+        onClearAllFilters={handleClearAllFilters}
       ></SelectMenu>
       <DeckGL layers={geoJsonData ? layers : []} initialViewState={INITIAL_VIEW_STATE} controller={true} effects={[LIGHTNING_EFFECT]}>
         <Map {...mapOptions} />

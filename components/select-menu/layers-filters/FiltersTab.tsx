@@ -9,10 +9,11 @@ interface FiltersTabComponentProps {
   onPropertySelected: (property: string | null, layerId: string, min: number, max: number, filterIndex: number) => void
   onSliderChange: (layerId: string, selectedProperty: string | null, newValue: number[] | number) => void
 
-  //onFiltersChange: (layerId: string, newFilters: Array<{ property: string | null; min: number; max: number; filterIndex: number }>) => void
   filters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>
   setFilters: (newFilters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>) => void
   layerAttributes: Record<string, LayerAttribute>
+  onFilterConditionDelete: (layerId: string, filterIndex: number) => void
+  onClearAllFilters: (layerId: string) => void
 }
 
 const FiltersTab: React.FC<FiltersTabComponentProps> = ({
@@ -20,10 +21,12 @@ const FiltersTab: React.FC<FiltersTabComponentProps> = ({
   layersData,
   onPropertySelected,
   onSliderChange,
-  //onFiltersChange,
+
   filters,
   setFilters,
   layerAttributes,
+  onFilterConditionDelete,
+  onClearAllFilters,
 }) => {
   return (
     <div className='mt-8'>
@@ -34,10 +37,11 @@ const FiltersTab: React.FC<FiltersTabComponentProps> = ({
           key={index}
           layer={layer}
           onSliderChange={onSliderChange}
-          //onFiltersChange={onFiltersChange}
           filters={filters}
           setFilters={setFilters}
           layerAttributes={layerAttributes}
+          onFilterConditionDelete={onFilterConditionDelete}
+          onClearAllFilters={onClearAllFilters}
         />
       ))}
     </div>

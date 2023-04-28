@@ -9,6 +9,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { Slider } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 
 export const CustomAutocomplete = styled(Autocomplete)({
   overflow: 'hidden',
@@ -59,6 +60,14 @@ export const CustomVisibilityOffIcon = styled(VisibilityOffIcon)`
   }
 `
 export const CustomDropDown = styled(ArrowDropDownIcon)`
+  font-size: medium;
+
+  &:hover {
+    color: #e4e4e7;
+  }
+`
+
+export const CustomClearAllIcon = styled(ClearAllIcon)`
   font-size: medium;
 
   &:hover {

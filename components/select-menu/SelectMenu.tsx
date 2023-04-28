@@ -46,6 +46,8 @@ interface ChildComponentProps {
   filters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>
   setFilters: (newFilters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>) => void
   layerAttributes: Record<string, LayerAttribute>
+  onFilterConditionDelete: (layerId: string, filterIndex: number) => void
+  onClearAllFilters: (layerId: string) => void
 }
 
 const SelectMenu: React.FC<ChildComponentProps> = ({
@@ -66,6 +68,8 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   filters,
   setFilters,
   layerAttributes,
+  onFilterConditionDelete,
+  onClearAllFilters,
 }) => {
   const [isLayersTabSelected, setLayersTabSelected] = useState(false)
   const [isDatasetTabSelected, setDatasetTabSelected] = useState(true)
@@ -353,6 +357,8 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                   layerAttributes={layerAttributes}
                   filters={filters}
                   setFilters={setFilters}
+                  onFilterConditionDelete={onFilterConditionDelete}
+                  onClearAllFilters={onClearAllFilters}
                 ></FiltersTab>
               ) : null}
               <div className='pt-16 pb-7 w-[250px]'>
