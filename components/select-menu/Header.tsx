@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import HexagonIcon from '@mui/icons-material/Hexagon'
 import { styled, Tooltip } from '@mui/material'
 import LayersIcon from '@mui/icons-material/Layers'
@@ -6,7 +6,7 @@ import TuneIcon from '@mui/icons-material/Tune'
 import DatasetIcon from '@mui/icons-material/Dataset'
 
 const HexagonLogo = styled(HexagonIcon)({
-  color: '#22d3ee',
+  color: '#cbd5e1',
 })
 
 interface ChildComponentProps {
@@ -31,7 +31,7 @@ const Header: React.FC<ChildComponentProps> = ({
     <div className='min-h-1/8 bg-zinc-800 rounded overflow-hidden flex flex-col justify-between'>
       <div className='inline-flex items-center pl-5 pt-9 pb-3'>
         <HexagonLogo></HexagonLogo>
-        <h1 className='text-cyan-400 pl-1 text-sm font-bold uppercase'>Data Visualization</h1>
+        <h1 className='text-slate-300 pl-1 text-sm font-bold uppercase'>Data Visualization</h1>
       </div>
       <div className='inline-flex items-center pb-2 pt-2'>
         <div className='pl-5 w-full pr-5'>

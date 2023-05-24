@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 import LayerComponent from '@/components/select-menu/layers-tab/LayerComponent'
+import { LayerDataRecord } from '@/types/common/LayersTypes'
+import { Option } from '@/types/common/Option'
 
 interface LayersTabComponentProps {
   layers: GeoJsonLayer[]
@@ -14,6 +16,14 @@ interface LayersTabComponentProps {
   onElevationRangeChange: (layerId: string, newElevationRange: number) => void
   onOpacityChange: (layerId: string, newOpacityValue: number) => void
   onColorScaleChange: (layerId: string, newOpacityValue: number) => void
+  layersData: LayerDataRecord
+  selectedElevationProp: Option | null
+  setSelectedElevationProp: (option: Option | null) => void
+  onPropertyElevationChange: (option: Option | null, layerId: string) => void
+  selectedColorProp: Option | null
+  setSelectedColorProp: (option: Option | null) => void
+
+  onPropertyColorChange: (option: Option | null, layerId: string) => void
 }
 
 const LayersTab: React.FC<LayersTabComponentProps> = ({
@@ -24,6 +34,13 @@ const LayersTab: React.FC<LayersTabComponentProps> = ({
   onElevationRangeChange,
   onColorScaleChange,
   onOpacityChange,
+  layersData,
+  selectedElevationProp,
+  setSelectedElevationProp,
+  onPropertyElevationChange,
+  selectedColorProp,
+  setSelectedColorProp,
+  onPropertyColorChange,
 }) => {
   return (
     <div className='mt-8'>
@@ -38,6 +55,13 @@ const LayersTab: React.FC<LayersTabComponentProps> = ({
           onOpacityChange={onOpacityChange}
           onColorScaleChange={onColorScaleChange}
           visibility={layer.props.visible}
+          layersData={layersData}
+          selectedElevationProp={selectedElevationProp}
+          setSelectedElevationProp={setSelectedElevationProp}
+          onPropertyElevationChange={onPropertyElevationChange}
+          selectedColorProp={selectedColorProp}
+          setSelectedColorProp={setSelectedColorProp}
+          onPropertyColorChange={onPropertyColorChange}
         />
       ))}
     </div>

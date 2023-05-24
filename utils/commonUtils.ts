@@ -1,7 +1,7 @@
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 import { v4 as uuid } from 'uuid'
-import { ValueExtractor } from '@/types/common/LayersTypes'
-import { scaleThreshold } from 'd3-scale'
+import { LayerDataRecord, ValueExtractor } from '@/types/common/LayersTypes'
+import { ScaleThreshold, scaleThreshold } from 'd3-scale'
 
 export function timestampToYear(timestamp: number): number {
   const date = new Date(timestamp)
@@ -24,20 +24,19 @@ export const getMinMaxValues = (data: GeoJSON.FeatureCollection, valueExtractor:
 
   data.features.forEach((feature: GeoJSON.Feature) => {
     const value = valueExtractor(feature)
+    if (typeof value == 'string') return
     if (value !== undefined && value !== null) {
       minValue = Math.min(minValue, value)
       maxValue = Math.max(maxValue, value)
     }
   })
-  console.log(minValue)
-  console.log(maxValue)
   return [minValue, maxValue]
 }
 export const normalizeValue = (value: number, minValue: number, maxValue: number, newMin: number, newMax: number): number => {
   return ((value - minValue) * (newMax - newMin)) / (maxValue - minValue) + newMin
 }
 
-export const createColorScale = (minValue: number, maxValue: number, numSegments: number) => {
+export const createColorScale = (minValue: number, maxValue: number, numSegments: number): ScaleThreshold<number, number, never> => {
   const domain = Array.from({ length: numSegments }, (_, i) => minValue + ((maxValue - minValue) * i) / (numSegments - 1))
 
   return (
@@ -61,4 +60,18 @@ export const createColorScale = (minValue: number, maxValue: number, numSegments
         [128, 0, 38],
       ])
   )
+}
+export const getPropertyKeys = (layerId: string, layersData: LayerDataRecord, includeStrings: boolean = false): string[] => {
+  const features = layersData[layerId].features
+  const propertyKeysSet = new Set<string>()
+
+  for (const feature of features) {
+    for (const key in feature.properties) {
+      const value = feature.properties[key]
+      if (typeof value === 'number' || (includeStrings && typeof value === 'string')) {
+        propertyKeysSet.add(key)
+      }
+    }
+  }
+  return Array.from(propertyKeysSet)
 }

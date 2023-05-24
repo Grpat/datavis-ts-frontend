@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { LayerAttribute, LayerDataRecord } from '@/types/common/LayersTypes'
 import { Option } from '@/types/common/Option'
 import SelectOption from '@/components/select-menu/SelectOption'
 import { Button, Tooltip } from '@mui/material'
 import { CustomDeleteIcon, CustomSlider } from '@/app/styles/muiStyled'
+import { getPropertyKeys } from '@/utils/commonUtils'
 
 interface FilterOptionsProps {
   layerId: string
@@ -31,39 +32,7 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({
     onFiltersChange([...filters, { property, min, max, filterIndex }])
   }
 
-  const getPropertyKeys = (layerId: string): string[] => {
-    const features = layersData[layerId].features
-    const propertyKeysSet = new Set<string>()
-
-    for (const feature of features) {
-      for (const key in feature.properties) {
-        const value = feature.properties[key]
-        if (typeof value === 'number') {
-          propertyKeysSet.add(key)
-        }
-      }
-    }
-    return Array.from(propertyKeysSet)
-  }
-  const getMinMaxPropertyValues = (layerId: string, property: string | undefined): [number, number] => {
-    const features = layersData[layerId].features
-    let minValue: number | null = null
-    let maxValue: number | null = null
-
-    for (const feature of features) {
-      if (feature.properties && property !== undefined) {
-        const propertyValue = feature.properties[property]
-
-        if (typeof propertyValue === 'number') {
-          minValue = minValue !== null ? Math.min(minValue, propertyValue) : propertyValue
-          maxValue = maxValue !== null ? Math.max(maxValue, propertyValue) : propertyValue
-        }
-      }
-    }
-    return [minValue ?? 0, maxValue ?? 0]
-  }
-
-  const propertyKeys = useMemo(() => getPropertyKeys(layerId), [layerId])
+  const propertyKeys = useMemo(() => getPropertyKeys(layerId, layersData), [layerId])
 
   const selectOptions: Option[] = propertyKeys.map((key, index) => ({
     id: index.toString(),
@@ -98,6 +67,23 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({
     onFilterConditionDelete(layerId, filterIndex)
     const newFilters = filters.filter(filter => filter.filterIndex !== filterIndex)
     onFiltersChange(newFilters)
+  }
+  const getMinMaxPropertyValues = (layerId: string, property: string | undefined): [number, number] => {
+    const features = layersData[layerId].features
+    let minValue: number | null = null
+    let maxValue: number | null = null
+
+    for (const feature of features) {
+      if (feature.properties && property !== undefined) {
+        const propertyValue = feature.properties[property]
+
+        if (typeof propertyValue === 'number') {
+          minValue = minValue !== null ? Math.min(minValue, propertyValue) : propertyValue
+          maxValue = maxValue !== null ? Math.max(maxValue, propertyValue) : propertyValue
+        }
+      }
+    }
+    return [minValue ?? 0, maxValue ?? 0]
   }
   return (
     <div className='flex w-full flex-col'>
@@ -134,6 +120,7 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({
                     valueLabelDisplay='auto'
                     min={filter.min}
                     max={filter.max}
+                    step={0.1}
                     onChange={(event, newValue) => {
                       onSliderChange(layerId, filter.property, newValue)
                     }}

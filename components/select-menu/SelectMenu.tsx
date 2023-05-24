@@ -3,14 +3,25 @@
 import React, { useState, useEffect } from 'react'
 
 import SelectOption from '@/components/select-menu/SelectOption'
-import { Indicator, IndicatorData, Paginated, Topic } from '@/types/worldbankdata-types/WorldBankData'
+import {
+  Indicator,
+  IndicatorData,
+  Paginated,
+  Topic,
+} from '@/types/worldbankdata-types/WorldBankData'
 import useHttp from '@/hooks/use-http'
 import { LoadingButton } from '@mui/lab'
 import { Option } from '@/types/common/Option'
 import CustomDateRangePicker from '@/components/select-menu/CustomDateRangePicker'
 import Header from '@/components/select-menu/Header'
 import { ArrowBackIcon } from '@/app/styles/muiStyled'
-import { allCountries, extractUniqueCountries, filterIndicators, getMinMaxYears, combineData } from '@/utils/WorldBankDataUtils'
+import {
+  allCountries,
+  extractUniqueCountries,
+  filterIndicators,
+  getMinMaxYears,
+  combineData,
+} from '@/utils/WorldBankDataUtils'
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 import { Button, ButtonGroup, CircularProgress } from '@mui/material'
 import ErrorIcon from '@mui/icons-material/Error'
@@ -18,7 +29,8 @@ import ErrorIcon from '@mui/icons-material/Error'
 import { GeoJsonLayer } from '@deck.gl/layers/typed'
 import LayersTab from '@/components/select-menu/layers-tab/LayersTab'
 import FiltersTab from '@/components/select-menu/layers-filters/FiltersTab'
-import { FilterCondition, LayerAttribute, LayerDataRecord } from '@/types/common/LayersTypes'
+import { LayerAttribute, LayerDataRecord } from '@/types/common/LayersTypes'
+import FileUploadModal from '@/components/select-menu/FileUploadModal'
 
 interface ChildComponentProps {
   geoJsonData: GeoJSON.FeatureCollection | null
@@ -36,18 +48,36 @@ interface ChildComponentProps {
 
   onCopyLayer(layerId: string): void
 
-  //filterConditions: FilterCondition[]
-
   onElevationRangeChange: (layerId: string, newElevationRange: number) => void
   onOpacityChange: (layerId: string, newOpacityValue: number) => void
   onColorScaleChange: (layerId: string, newOpacityValue: number) => void
-  onPropertySelected: (property: string | null, layerId: string, min: number, max: number, filterIndex: number) => void
-  onSliderChange: (layerId: string, selectedProperty: string | null, newValue: number[] | number) => void
-  filters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>
-  setFilters: (newFilters: Record<string, Array<{ property: string | null; min: number; max: number; filterIndex: number }>>) => void
+  onPropertySelected: (
+    property: string | null,
+    layerId: string,
+    min: number,
+    max: number,
+    filterIndex: number,
+  ) => void
+  onSliderChange: (
+    layerId: string,
+    selectedProperty: string | null,
+    newValue: number[] | number,
+  ) => void
+  filters: Record<
+    string,
+    Array<{ property: string | null; min: number; max: number; filterIndex: number }>
+  >
+  setFilters: (
+    newFilters: Record<
+      string,
+      Array<{ property: string | null; min: number; max: number; filterIndex: number }>
+    >,
+  ) => void
   layerAttributes: Record<string, LayerAttribute>
   onFilterConditionDelete: (layerId: string, filterIndex: number) => void
   onClearAllFilters: (layerId: string) => void
+  onPropertyElevationChange: (layerId: string, newElevationProperty: string) => void
+  onPropertyColorChange: (layerId: string, newElevationProperty: string) => void
 }
 
 const SelectMenu: React.FC<ChildComponentProps> = ({
@@ -70,6 +100,8 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   layerAttributes,
   onFilterConditionDelete,
   onClearAllFilters,
+  onPropertyElevationChange,
+  onPropertyColorChange,
 }) => {
   const [isLayersTabSelected, setLayersTabSelected] = useState(false)
   const [isDatasetTabSelected, setDatasetTabSelected] = useState(true)
@@ -94,9 +126,24 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   const [minDate, setMinDate] = useState<Date>(new Date(2021, 0, 1))
   const [maxDate, setMaxDate] = useState<Date>(new Date(2021, 0, 1))
 
-  const { isLoading: isLoadingTopics, error: errorTopics, sendRequest: fetchTopics } = useHttp<Paginated<Topic>>()
-  const { isLoading: isLoadingIndicators, error: errorIndicators, sendRequest: fetchIndicators } = useHttp<Paginated<Indicator>>()
-  const { isLoading: isLoadingDataset, error: errorDataset, sendRequest: fetchData } = useHttp<Paginated<IndicatorData>>()
+  const [selectedElevationProp, setSelectedElevationProp] = useState<Option | null>(null)
+  const [selectedColorProp, setSelectedColorProp] = useState<Option | null>(null)
+
+  const {
+    isLoading: isLoadingTopics,
+    error: errorTopics,
+    sendRequest: fetchTopics,
+  } = useHttp<Paginated<Topic>>()
+  const {
+    isLoading: isLoadingIndicators,
+    error: errorIndicators,
+    sendRequest: fetchIndicators,
+  } = useHttp<Paginated<Indicator>>()
+  const {
+    isLoading: isLoadingDataset,
+    error: errorDataset,
+    sendRequest: fetchData,
+  } = useHttp<Paginated<IndicatorData>>()
 
   useEffect(() => {
     const extractTopicsData = (data: Paginated<Topic>) => {
@@ -142,7 +189,6 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
       extractIndicators,
     )
   }
-
   const handleIndicatorChange = (option: Option | null) => {
     if (option == null) setIndicatorData([])
     setIndicatorData([])
@@ -174,14 +220,21 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
   }
 
   const addLayer = () => {
-    const filteredIndicators = filterIndicators(selectedCountries, indicatorData, dateRangeStart.getFullYear(), dateRangeEnd.getFullYear())
+    const filteredIndicators = filterIndicators(
+      selectedCountries,
+      indicatorData,
+      dateRangeStart.getFullYear(),
+      dateRangeEnd.getFullYear(),
+    )
     const wBankDataLayer = combineData(geoJsonData, filteredIndicators)
     setFilteredIndicatorData(filteredIndicators)
     onAddLayer(wBankDataLayer)
   }
 
   const canAddLayer = () => {
-    return indicatorData.length > 0 && selectedCountries.length > 0 && !startDateError && !endDateError
+    return (
+      indicatorData.length > 0 && selectedCountries.length > 0 && !startDateError && !endDateError
+    )
   }
   const extractIndicatorsData = (data: Paginated<IndicatorData>) => {
     const [, indicatorsData] = data
@@ -191,7 +244,9 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
       return
     }
 
-    const filteredIndicatorsData = indicatorsData.filter(item => item.value !== null && item.date !== null && item.country.value != null)
+    const filteredIndicatorsData = indicatorsData.filter(
+      item => item.value !== null && item.date !== null && item.country.value != null,
+    )
 
     //set min/max dates for calendar filter
     const minMaxYears = getMinMaxYears(filteredIndicatorsData)
@@ -212,29 +267,35 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
     if (!canFetchDataset()) return
     fetchData(
       {
-        url: `http://api.worldbank.org/v2/country/all/indicator/${selectedIndicator?.id}?per_page=20000&format=json`,
+        url: `http://api.worldbank.org/v2/country/all/indicator/${selectedIndicator?.id}
+        ?per_page=20000&format=json`,
       },
       extractIndicatorsData,
     )
   }
-
-  useEffect(() => {
-    console.log(indicatorData)
-  }, [indicatorData])
-
-  useEffect(() => {
-    console.log(filteredIndicatorData)
-  }, [filteredIndicatorData])
+  const handleElevationPropertyChange = (option: Option | null, layerId: string) => {
+    if (!option) return
+    setSelectedElevationProp(option)
+    onPropertyElevationChange(layerId, option.value)
+  }
+  const handleColorPropertyChange = (option: Option | null, layerId: string) => {
+    if (!option) return
+    setSelectedColorProp(option)
+    onPropertyColorChange(layerId, option.value)
+  }
 
   return (
     <div className='relative flex z-10 h-screen items-center w-80 '>
-      <div className={`absolute left-5 h-[96%] bg-zinc-900 duration-100 rounded ${open ? 'w-72' : 'w-0'}`}>
+      <div
+        className={`absolute left-5 h-[96%] bg-zinc-900 duration-100 rounded ${
+          open ? 'w-72' : 'w-0'
+        }`}
+      >
         <ArrowBackIcon
           onClick={() => setOpen(!open)}
           className={`absolute -right-7 top-0 bg-zinc-900 cursor-pointer rounded-sm hover:bg-zinc-600
                 ${!open && 'rotate-180'}`}
         ></ArrowBackIcon>
-
         <div className='h-full flex flex-col'>
           <Header
             isLayersTabSelected={isLayersTabSelected}
@@ -262,19 +323,12 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                     <>
                       <div className='flex pt-9 w-[250px] justify-between'>
                         <h1 className='font-medium mt-2 text-zinc-200 '>DATASETS</h1>
-                        <LoadingButton
-                          className='bg-cyan-900 hover:bg-cyan-800'
-                          variant='contained'
-                          size='small'
-                          disabled={!canFetchDataset()}
-                          onClick={fetchDataset}
-                          loading={isLoadingDataset}
-                        >
-                          Fetch data
-                        </LoadingButton>
+                        <FileUploadModal onAddLayer={onAddLayer}></FileUploadModal>
                       </div>
+                      <div className='h-[1px] w-[250px] bg-zinc-600 mt-6 mb-2' />
+                      <h1 className='font-medium mt-2 text-zinc-200 '>World Bank Data</h1>
                       {!isLoadingTopics && !errorTopics && (
-                        <div className='pt-11 w-[250px]'>
+                        <div className='pt-9 w-[250px]'>
                           <label className='font-thin pb-5'>Topic</label>
                           <SelectOption
                             isMultiple={false}
@@ -295,19 +349,22 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                           />
                         </div>
                       )}
+                      <div className='flex pt-7 w-[250px] justify-end'>
+                        <LoadingButton
+                          className='bg-cyan-900 hover:bg-cyan-800'
+                          variant='contained'
+                          size='small'
+                          disabled={!canFetchDataset()}
+                          onClick={fetchDataset}
+                          loading={isLoadingDataset}
+                        >
+                          Fetch data
+                        </LoadingButton>
+                      </div>
                       {indicatorData.length > 0 && (
-                        <div className='pt-10 w-[250px]'>
-                          <div className='flex justify-between  pb-7'>
+                        <div className='pt-7 w-[250px]'>
+                          <div className='flex justify-start  pb-7'>
                             <h1 className='font-xs mt-2 text-zinc-200 '>Filter</h1>
-                            <LoadingButton
-                              className='bg-cyan-900 hover:bg-cyan-800'
-                              variant='contained'
-                              size='small'
-                              disabled={!canAddLayer()}
-                              onClick={addLayer}
-                            >
-                              Add Layer
-                            </LoadingButton>
                           </div>
                           <label className='font-thin'>Range</label>
                           <CustomDateRangePicker
@@ -333,6 +390,17 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                             selectedOption={selectedCountries}
                             onOptionChange={handleCountriesChange}
                           />
+                          <div className='flex justify-end  pt-7'>
+                            <LoadingButton
+                              className='bg-cyan-900 hover:bg-cyan-800'
+                              variant='contained'
+                              size='small'
+                              disabled={!canAddLayer()}
+                              onClick={addLayer}
+                            >
+                              Add Layer
+                            </LoadingButton>
+                          </div>
                         </div>
                       )}
                     </>
@@ -347,6 +415,13 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
                   onElevationRangeChange={onElevationRangeChange}
                   onColorScaleChange={onColorScaleChange}
                   onOpacityChange={onOpacityChange}
+                  layersData={layersData}
+                  selectedElevationProp={selectedElevationProp}
+                  setSelectedElevationProp={setSelectedElevationProp}
+                  onPropertyElevationChange={handleElevationPropertyChange}
+                  selectedColorProp={selectedColorProp}
+                  setSelectedColorProp={setSelectedColorProp}
+                  onPropertyColorChange={handleColorPropertyChange}
                 ></LayersTab>
               ) : isFilterTabSelected ? (
                 <FiltersTab
@@ -364,11 +439,24 @@ const SelectMenu: React.FC<ChildComponentProps> = ({
               <div className='pt-16 pb-7 w-[250px]'>
                 <div className='h-[1px] w-full bg-zinc-600 mb-2' />
                 <h1 className='font-medium mt-4 text-zinc-200 mb-4'>LAYERS ({layers.length})</h1>
-                <ButtonGroup variant='contained' color='success' aria-label='outlined button group' className='w-full'>
-                  <Button className='bg-cyan-900 hover:bg-cyan-800 w-1/2 ' size='small' onClick={handleLayersIconClick}>
+                <ButtonGroup
+                  variant='contained'
+                  color='success'
+                  aria-label='outlined button group'
+                  className='w-full'
+                >
+                  <Button
+                    className='bg-cyan-900 hover:bg-cyan-800 w-1/2 '
+                    size='small'
+                    onClick={handleLayersIconClick}
+                  >
                     Manage
                   </Button>
-                  <Button className='bg-cyan-900 hover:bg-cyan-800 w-1/2' size='small' onClick={handleFilterIconClick}>
+                  <Button
+                    className='bg-cyan-900 hover:bg-cyan-800 w-1/2'
+                    size='small'
+                    onClick={handleFilterIconClick}
+                  >
                     Filter
                   </Button>
                 </ButtonGroup>

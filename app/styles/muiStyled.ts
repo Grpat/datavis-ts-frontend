@@ -7,7 +7,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import { Slider } from '@mui/material'
+import { Slider, Switch } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 
@@ -25,7 +25,7 @@ export const CustomTextField = styled(TextField)({
 })
 export const ArrowBackIcon = styled(ArrowBackIosNewIcon)({
   fontSize: 'medium',
-  color: '#5eead4',
+  color: '#38bdf8',
 })
 export const CustomPaper = styled(Paper)({
   backgroundColor: '#27272a',
@@ -71,7 +71,7 @@ export const CustomClearAllIcon = styled(ClearAllIcon)`
   font-size: medium;
 
   &:hover {
-    color: #e4e4e7;
+    color: #f43f5e;
   }
 `
 export const CustomAddIcon = styled(AddIcon)`
@@ -82,7 +82,7 @@ export const CustomAddIcon = styled(AddIcon)`
   }
 `
 export const CustomSlider = styled(Slider)({
-  color: '#64748b',
+  //color: '#64748b',
 
   '& .MuiSlider-thumb': {
     borderRadius: '1px',
@@ -99,3 +99,33 @@ export const CustomSlider = styled(Slider)({
   },
   '& .MuiSlider-mark': { borderRadius: '0px', backgroundColor: '#cbd5e1' },
 })
+
+export const CustomSwitch = styled(Switch)({
+  //marginTop: 2,
+  '& .MuiSwitch-thumb': {
+    '&:before': {
+      color: '#fb923c',
+    },
+    //color: '#64748b',
+    //borderRadius: 1,
+    //width: '13px',
+    //height: '13px',
+  },
+  '& .MuiSwitch-track': {
+    // borderRadius: 1,
+    //height: '7px',
+    backgroundColor: '#cbd5e1',
+  },
+})
+export const FileUploadStyle = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 2,
+  borderRadius: 1,
+}

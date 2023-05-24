@@ -9,6 +9,8 @@ import {
 } from '@/app/styles/muiStyled'
 import { Tooltip } from '@mui/material'
 import LayerSettings from '@/components/select-menu/layers-tab/LayerSettings'
+import { LayerDataRecord } from '@/types/common/LayersTypes'
+import { Option } from '@/types/common/Option'
 
 interface LayerComponentProps {
   layer: GeoJsonLayer
@@ -24,6 +26,14 @@ interface LayerComponentProps {
   onCopyLayer(layerId: string): void
 
   visibility: boolean
+  layersData: LayerDataRecord
+  selectedElevationProp: Option | null
+  setSelectedElevationProp: (option: Option | null) => void
+  onPropertyElevationChange: (option: Option | null, layerId: string) => void
+  selectedColorProp: Option | null
+  setSelectedColorProp: (option: Option | null) => void
+
+  onPropertyColorChange: (option: Option | null, layerId: string) => void
 }
 
 const LayerComponent: React.FC<LayerComponentProps> = ({
@@ -35,6 +45,13 @@ const LayerComponent: React.FC<LayerComponentProps> = ({
   onOpacityChange,
   onColorScaleChange,
   visibility,
+  layersData,
+  selectedElevationProp,
+  setSelectedElevationProp,
+  onPropertyElevationChange,
+  selectedColorProp,
+  setSelectedColorProp,
+  onPropertyColorChange,
 }) => {
   const layerInfo = layer.id.split('|').slice(0, -1)
   const [isVisible, setIsVisible] = useState<boolean>(visibility)
@@ -59,7 +76,7 @@ const LayerComponent: React.FC<LayerComponentProps> = ({
     <div>
       <div
         className={`flex mt-2 h-12 w-[250px] bg-zinc-800 rounded-sm hover:bg-zinc-700 transition-colors duration-300 justify-center cursor-pointer ${
-          isSelectedLayer === true ? 'ml-2 border-l-4 border-indigo-600' : 'border-l-2 border-cyan-400'
+          isSelectedLayer ? 'ml-2 border-l-2 border-indigo-600' : 'border-l-2 border-cyan-400'
         }`}
       >
         <div className='flex flex-col space-y-1  w-[200px] justify-center'>
@@ -96,6 +113,13 @@ const LayerComponent: React.FC<LayerComponentProps> = ({
           onOpacityChange={onOpacityChange}
           onColorScaleChange={onColorScaleChange}
           layerId={layer.id}
+          layersData={layersData}
+          selectedElevationProp={selectedElevationProp}
+          setSelectedElevationProp={setSelectedElevationProp}
+          onPropertyElevationChange={onPropertyElevationChange}
+          selectedColorProp={selectedColorProp}
+          setSelectedColorProp={setSelectedColorProp}
+          onPropertyColorChange={onPropertyColorChange}
         ></LayerSettings>
       )}
     </div>

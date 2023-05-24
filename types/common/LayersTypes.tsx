@@ -1,6 +1,6 @@
 import { GeoJSON } from '@/types/common/GeojsonTypes'
 
-export type ValueExtractor = (feature: GeoJSON.Feature) => number
+export type ValueExtractor = (feature: GeoJSON.Feature) => number | string
 export type LayerDataRecord = Record<string, GeoJSON.FeatureCollection>
 export type FilterCondition = {
   selectedProperty: string
@@ -12,6 +12,7 @@ export type FilterCondition = {
 
 export type LayerAttribute = {
   elevationRange: [number, number]
+  colorRange: [number, number]
   elevationPropertyExtractor: ValueExtractor
   colorPropertyExtractor: ValueExtractor
   filterConditions: FilterCondition[]

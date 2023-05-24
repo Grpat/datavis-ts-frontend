@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 import { DesktopDatePicker, DesktopDatePickerProps } from '@mui/x-date-pickers/DesktopDatePicker'
 import { DesktopDatePickerSlotsComponentsProps } from '@mui/x-date-pickers/DesktopDatePicker/DesktopDatePicker.types'
 import { CustomPaper, CustomTextField } from '@/app/styles/muiStyled'
-import { FormHelperText } from '@mui/material'
 
 const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<any> = {
   textField: {
@@ -13,7 +12,7 @@ const datePickerSlotProps: DesktopDatePickerSlotsComponentsProps<any> = {
   openPickerIcon: {
     sx: {
       marginRight: 1,
-      color: '#5eead4',
+      color: '#38bdf8',
     },
   },
   layout: {
