@@ -3,14 +3,14 @@ import { createTheme } from '@mui/material'
 export const theme = createTheme({
   palette: {
     success: {
-      main: '#0d9488', // Replace with your desired color
+      main: '#0891b2', // Replace with your desired color
     },
     text: {
       primary: '#a1a1aa',
     },
   },
   typography: {
-    fontSize: 11,
+    fontSize: 11.5,
   },
   components: {
     MuiCssBaseline: {
@@ -57,7 +57,7 @@ export const theme = createTheme({
             borderBottomColor: '#99f6e4',
           },
           '& .MuiInput-underline:after': {
-            borderBottomColor: '#5eead4',
+            borderBottomColor: '#38bdf8',
           },
           '&. Mui-error:after': {
             borderBottomColor: '#fda4af',
@@ -67,19 +67,6 @@ export const theme = createTheme({
             '& fieldset': {
               borderColor: '#5eead4',
             },
-            /* '&:hover fieldset': {
-                                 borderColor: '#fdba74',
-                                 borderWidth: '0.15rem',
-                             },*/
-            /* '&.Mui-focused fieldset': {
-                                 borderColor: '#fdba74',
-                             },*/
-            /*  '& MuiButtonBase-root': {
-                                  color: '#09090b',
-                              },
-                              '& MuiButtonBase-root:after': {
-                                  color: '#09090b',
-                              },*/
           },
         },
       },
@@ -88,10 +75,10 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiAutocomplete-clearIndicator': {
-            color: '#5eead4',
+            color: '#38bdf8',
           },
           '& .MuiAutocomplete-popupIndicator': {
-            color: '#5eead4',
+            color: '#38bdf8',
           },
         },
       },

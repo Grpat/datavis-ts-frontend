@@ -1,4 +1,5 @@
 import { PaginationInfo } from '@/types/common/PaginationInfo'
+import { GeoJSON } from '@/types/common/GeojsonTypes'
 
 export interface Topic {
   id: string

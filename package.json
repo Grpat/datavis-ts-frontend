@@ -17,9 +17,11 @@
     "@mui/lab": "^5.0.0-alpha.125",
     "@mui/material": "^5.11.15",
     "@mui/x-date-pickers": "^6.0.4",
+    "@types/d3-scale": "^4.0.3",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
     "@types/react-dom": "18.0.11",
+    "d3-scale": "^4.0.2",
     "date-fns": "^2.29.3",
     "deck.gl": "^8.9.4",
     "eslint": "8.37.0",
@@ -31,8 +33,11 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-map-gl": "^7.0.21",
+    "react-mui-fileuploader": "^0.5.2",
     "react-select": "^5.7.2",
-    "typescript": "5.0.2"
+    "typescript": "5.0.2",
+    "uuid": "^9.0.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
